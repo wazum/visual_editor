@@ -81,7 +81,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
             $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::input);
         }
 
-        $value = $editable->getValue();
+        $value = $editable->getValue() ?? '';
 
         $escapedValue = $this->escapeRte($value);
         if (!$this->brickService->isEditMode()) {

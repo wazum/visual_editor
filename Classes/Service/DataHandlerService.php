@@ -34,7 +34,7 @@ final readonly class DataHandlerService
         $newUid = $this->createRow($table, $row);
         // saved, now loading...
 
-        $rowFromDb = BackendUtility::getRecord($table, $newUid);
+        $rowFromDb = BackendUtility::getRecordWSOL($table, $newUid);
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $rowFromDb);
         assert($record instanceof Record, 'Record is not instance of Record');
         return $record;

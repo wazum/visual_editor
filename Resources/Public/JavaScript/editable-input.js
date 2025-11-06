@@ -107,6 +107,8 @@ export class EditableInput extends LitElement {
                     class=${classMap({slot: true, synced: this.isSynced, changed: this.changed,})}
                     style="--button-count: ${buttonCount};--deg: ${Math.random() * 360}deg;"
                     contenteditable="${this.isSynced ? 'false' : 'plaintext-only'}"
+                    role="textbox"
+                    spellcheck="true"
                     data-placeholder="${this.value.length ? '' : (this.placeholder || '\u200B'/* placeholder keeps firefox from breaking out*/)}"
                     @input="${(event) => {
                         this.value = event.currentTarget.innerText.trim();
@@ -129,18 +131,12 @@ export class EditableInput extends LitElement {
       :host {
         position: relative;
         display: inline-block;
-        outline-offset: 1px;
       }
 
       .slot {
         min-width: 5px;
         display: inline-block;
-        border: 1px solid transparent;
-        &:hover, &:focus {
-          --deg: 90deg;
-          border-image: conic-gradient(from var(--deg), #ff0000 0%, #ffff00 8.33%, #00ff00 16.66%, #00ffff 25%, #0000ff 33.33%, #ff00ff 41.66%, #ff0000 50%, #ffff00 58.33%, #00ff00 66.66%, #00ffff 75%, #0000ff 83.33%, #ff00ff 91.66%, #ff0000 100%) 1;
-          outline: 0;
-        }
+        min-height: 1lh;
 
         border-radius: 4px;
         padding-left: 4px;
@@ -151,23 +147,24 @@ export class EditableInput extends LitElement {
           color: #555;
         }
       }
+      .slot:hover, .slot:focus {
+        box-shadow: 0 0 4px 0 rgba(0,0,0,0.50) inset;
+        outline: 0;
+        backdrop-filter: invert(20%);
+      }
 
       .slot.synced {
         /* blur the text: */
         user-select: none;
+        // TODO use backdrop-filter
         color: #888;
         background: #f2f2f2;
         outline-color: #bfbfbf;
         cursor: not-allowed;
       }
 
-      .slot.disabled {
-        filter: blur(1px);
-      }
-
       .slot.changed {
-        background: #ffa5007d;
-        outline-color: #ffa5007d;
+        backdrop-filter: hue-rotate(120deg) invert(30%);
       }
 
       .buttons {

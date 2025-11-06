@@ -84,7 +84,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::input);
         }
 
-        $value = $editable->getValue();
+        $value = $editable->getValue() ?? '';
         $value = str_replace("\r\n", "\n", $value);
         if ($allowNewLines) {
             // convert <br> to new lines for editing (old content might have <br>)
