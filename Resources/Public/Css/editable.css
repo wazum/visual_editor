@@ -2,6 +2,9 @@
  * Custom styles for CKEditor to make it blend with the surrounding content.
  * TODO move this into the <editable-rte>?
  */
+editable-rte {
+  display: inline-block;
+}
 
 .ck-content {
   background: none !important;
@@ -15,7 +18,7 @@
   * Highlight the editable area on hover and focus:
  */
 .ck-content:hover, .ck-content:focus {
-  box-shadow: 0 0 4px 0 rgba(0,0,0,0.50) inset !important;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset !important;
   outline: 0 !important;
   backdrop-filter: blur(10px) invert(20%) !important;
 }
@@ -38,9 +41,6 @@ editable-rte[changed] + * .ck-content {
   }
 }
 
-.ck.ck-editor__editable_inline > :first-child {
-  margin-top: 0 !important;
-}
-.ck.ck-editor__editable_inline>:last-child {
-  margin-bottom: 0 !important;
+.ck-content {
+  /*color: var(--ck-content-font-color); !* TODO fix this if color is white we want to use white *!*/
 }

@@ -113,7 +113,7 @@ export class EditaraSaveButton extends LitElement {
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            z-index: 1000;
+            z-index: 100000;
         }
 
         button[disabled] {

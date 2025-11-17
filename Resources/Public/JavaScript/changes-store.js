@@ -50,6 +50,7 @@ class ChangesStore extends EventTarget {
      * @return {void}
      */
     set(table, uid, field, value, langSyncUid) {
+        const oldChanges = structuredClone(this.#changes);
         this.#changes[table] = this.#changes[table] || {};
         this.#changes[table][uid] = this.#changes[table][uid] || {};
         this.#changes[table][uid][field] = value;
@@ -67,6 +68,9 @@ class ChangesStore extends EventTarget {
             delete this.#changes[table];
         }
 
+        if(JSON.stringify(oldChanges) === JSON.stringify(this.#changes)) {
+            return;
+        }
         this.dispatchEvent(new CustomEvent('changes', {detail: {changes: structuredClone(this.#changes)}}));
     }
 
