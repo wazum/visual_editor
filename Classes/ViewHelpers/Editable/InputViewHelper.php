@@ -51,7 +51,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $field = $this->arguments['field'];
 
         $allowNewLines = $this->arguments['allowNewLines'];
-        $default = $this->arguments['default'];
+        $default = $this->arguments['default'] ?: $this->renderChildren();
 
         if (!($name xor $record)) {
             throw new InvalidArgumentException('You must provide either "name" or "record"+"field" arguments not both or none.');
@@ -73,7 +73,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             );
         }
         if ($record && $field) {
-            $this->brickService->getScope($this->renderingContext); // ensure initialized
+            $this->brickService->getTemplateBrick($this->renderingContext); // ensure initialized
             $editable = new Editable(
                 name: $record->getMainType() . '[' . $record->getUid() . ']' . $field,
                 type: EditableType::input,

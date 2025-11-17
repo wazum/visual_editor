@@ -7,6 +7,7 @@ namespace Andersundsehr\Editara\Enum;
 enum EditableType
 {
     case input;
+    case rte;
     case link;
     case image;
     case checkbox;

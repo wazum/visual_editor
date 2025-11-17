@@ -6,9 +6,10 @@ namespace Andersundsehr\Editara\Service;
 
 use Andersundsehr\Editara\Dto\Editable;
 use Andersundsehr\Editara\Enum\EditableType;
-use Andersundsehr\Editara\Fluid\Scope;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\EndTimeRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendGroupRestriction;
@@ -21,8 +22,6 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
-use TYPO3Fluid\Fluid\Core\Variables\VariableProviderInterface;
-
 use function assert;
 use function str_replace;
 
@@ -34,31 +33,59 @@ final readonly class BrickService
         private DataHandlerService $dataHandlerService,
         private ConnectionPool $connectionPool,
         private SiteFinder $siteFinder,
-    ) {}
+        #[Autowire(service: 'cache.runtime')]
+        private FrontendInterface $runtimeCache,
+    )
+    {
+    }
 
     public function getEditable(RenderingContextInterface $renderingContext, string $name, EditableType $type): Editable
     {
-        return $this->getScope($renderingContext)->getEditable($name, $type);
+        $templateBrick = $this->getTemplateBrick($renderingContext);
+        return $this->getEditableFromTemplateBrick($templateBrick, $name, $type);
     }
 
-    public function getScope(RenderingContextInterface $renderingContext): Scope
+    private function getEditableFromTemplateBrick(Record $templateBrick, string $name, EditableType $type): Editable
     {
-        $pageRecord = $this->findPageRecordObject($renderingContext); // TODO only run this once
-        $this->init($pageRecord->getUid(), $pageRecord->getLanguageId());
+        if (!$name) {
+            throw new \Exception('name must be not empty');
+        }
 
+        $cacheKey = str_replace('\\','_', __CLASS__ . '_' . $templateBrick->getUid() . '_' . $name);
+        if ($this->runtimeCache->has($cacheKey)) {
+            // allow overwriting? better not
+            throw new \RuntimeException('Editable with name "' . $name . '" already exists in templateBrick:' . $templateBrick->getUid());
+        }
+
+        $record = null;
+        foreach ($templateBrick->get('editables') as $editable) {
+            if ($editable->get('name') === $name) {
+                $record = $editable;
+                break;
+            }
+        }
+        if (!$record) {
+            $record = $this->createEditableRecord($templateBrick, $name, $type);
+        }
+        $this->runtimeCache->set($cacheKey, true);
+        return new Editable($name, $type, $type->getField(), $record);
+    }
+
+    public function getTemplateBrick(RenderingContextInterface $renderingContext): Record
+    {
         $templateVariableContainer = $renderingContext->getVariableProvider();
-        $scope = $templateVariableContainer->get('editara');
-        if (!$scope) {
+        $templateBrick = $templateVariableContainer->get('editara___templateBrick');
+        if (!$templateBrick) {
             $pageRecord = $this->findPageRecordObject($renderingContext);
+            $this->init($pageRecord->getUid(), $pageRecord->getLanguageId());
             $templateBrick = $pageRecord->get('template_brick')[0] ?? null; // ensure loaded
             if (!$templateBrick) {
                 assert($pageRecord instanceof Record, 'pageRecord must be a Record, not only RecordInterface');
                 $templateBrick = $this->createTemplateBrickForPage($pageRecord);
             }
-            $scope = new Scope('', $templateBrick, $this);
-            $templateVariableContainer->add('editara', $scope);
+            $templateVariableContainer->add('editara___templateBrick', $templateBrick);
         }
-        return $scope;
+        return $templateBrick;
     }
 
     private function findPageRecordObject(RenderingContextInterface $renderingContext): RecordInterface

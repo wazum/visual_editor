@@ -8,6 +8,7 @@ use Andersundsehr\Editara\Core\RichtText\RichTextConfigurationService;
 use Andersundsehr\Editara\Core\RichtText\RichTextConfigurationServiceDto;
 use Andersundsehr\Editara\Dto\Editable;
 use Andersundsehr\Editara\Dto\Input;
+use Andersundsehr\Editara\Dto\Rte;
 use Andersundsehr\Editara\Enum\EditableType;
 use Andersundsehr\Editara\Service\BrickService;
 use Andersundsehr\Editara\Service\RecordService;
@@ -23,7 +24,6 @@ use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 use function json_encode;
-use const PHP_EOL;
 
 #[Autoconfigure(public: true)]
 final class RteViewHelper extends AbstractTagBasedViewHelper
@@ -54,7 +54,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->registerArgument('default', 'string', 'will be in .value but will not be saved in the DB', false, '');
     }
 
-    public function render(): Input
+    public function render(): Rte
     {
         $name = $this->arguments['name'];
         $record = $this->arguments['record'];
@@ -82,32 +82,31 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
             );
         }
         if ($record && $field) {
-            $this->brickService->getScope($this->renderingContext); // ensure initialized
+            $this->brickService->getTemplateBrick($this->renderingContext); // ensure initialized
             $editable = new Editable(
                 name: $record->getMainType() . '[' . $record->getUid() . ']' . $field,
-                type: EditableType::input,
+                type: EditableType::rte,
                 field: $field,
                 record: $record,
             );
         } else {
-            $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::input);
+            $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::rte);
         }
 
         $value = $editable->getValue() ?? '';
 
-        $escapedValue = $this->escapeRte($value);
-        if (!$this->brickService->isEditMode()) {
-            $escapedValue = $this->escapeRte($value ?: $default);
-        }
 
         if (!$this->brickService->isEditMode()) {
-            return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
+            $escapedValue = $this->text2html($value ?: $default);
+            return new Rte($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
         }
+
+        [$options, $processingConfiguration] = $this->getOptions($editable, $default);
+        $escapedValue = $this->rteHtmlParser->transformTextForRichTextEditor($value, $processingConfiguration);
 
         $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
         $site = $request->getAttribute('site');
         $syncLanguage = $this->recordService->getSyncLanguageForField($site, $editable->record, 'value');
-        $options = $this->getOptions($editable, $default);
 
         $this->tag->addAttribute('table', $editable->record->getMainType());
         $this->tag->addAttribute('uid', $editable->record->getUid());
@@ -122,12 +121,11 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        return new Input($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
+        return new Rte($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
     }
 
-    private function escapeRte(string $value): string
+    private function text2html(string $value): string
     {
-        // TODO use $this->rteHtmlParser->transformTextForRichTextEditor for editMode?
         return $this->renderingContext->getViewHelperInvoker()->invoke(
             HtmlViewHelper::class,
             [], // TODO allow passing arguments?
@@ -136,7 +134,10 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         );
     }
 
-    private function getOptions(Editable $editable, string $placeholder): string
+    /**
+     * @return array{0:string, 1:array<mixed>}
+     */
+    private function getOptions(Editable $editable, string $placeholder): array
     {
         $schema = $this->tcaSchema->get($editable->record->getFullType());
         $richtextConfiguration = $this->richtext->getConfiguration(
@@ -167,9 +168,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         unset($config['height']); // height is set by the content itself and css
         $config['debug'] = false; // for now we disable debug mode
 
-        // $processingConfiguration = $richtextConfiguration['proc.'] ?? []; // TODO use this with $this->rteHtmlParser->transformTextForRichTextEditor
-
         $this->assetCollector->addJavaScriptModule('@typo3/ckeditor5/translations/' . $config['language']['ui'] . '.js');
-        return json_encode($config, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
+        return [json_encode($config, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), $richtextConfiguration['proc.'] ?? []];
     }
 }
