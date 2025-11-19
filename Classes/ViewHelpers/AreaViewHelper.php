@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\ViewHelpers;
 
+use Andersundsehr\Editara\Dto\BrickTemplate;
 use Andersundsehr\Editara\Service\BrickService;
 use Andersundsehr\Editara\Service\BrickTemplateService;
 use Psr\Http\Message\ServerRequestInterface;
@@ -62,17 +63,19 @@ final class AreaViewHelper extends AbstractViewHelper
                 continue;
             }
 
+            $brickTemplate = $this->brickTemplateService->get($templateBrick->get('template_name'));
+
             if ($editMode) {
                 $attributes = [
                     'class' => 'editara-focus',
                     'areaName' => $name,
                     'uid' => $templateBrick->getUid(),
                     'parentUid' => $parent->getUid(),
-                    'templateName' => $templateBrick->get('template_name'),
+                    'templateName' => $brickTemplate->title,
                 ];
                 $result .= '<editara-area-brick ' . GeneralUtility::implodeAttributes($attributes) . '>';
             }
-            $result .= $this->renderTemplate($templateBrick);
+            $result .= $this->renderTemplate($brickTemplate, $templateBrick);
             if ($editMode) {
                 $result .= "</editara-area-brick>";
             }
@@ -83,10 +86,8 @@ final class AreaViewHelper extends AbstractViewHelper
         return $result;
     }
 
-    private function renderTemplate(Record $templateBrick): string
+    private function renderTemplate(BrickTemplate $brickTemplate, Record $templateBrick): string
     {
-        $brickTemplate = $this->brickTemplateService->get($templateBrick->get('template_name'));
-
         $templatePaths = $this->renderingContext->getTemplatePaths();
         $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
         $viewFactoryData = GeneralUtility::makeInstance(
@@ -99,7 +100,7 @@ final class AreaViewHelper extends AbstractViewHelper
         );
         $view = $this->viewFactory->create($viewFactoryData);
 
-        // TODO give defined variables only
+        // TODO give variables that are defined in the template. with <f:argument> !
 //        $view->assignMultiple($this->templateVariableContainer->getAll());
         $view->assign('editara___templateBrick', $templateBrick);
 

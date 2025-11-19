@@ -1,5 +1,7 @@
 import {css, html, LitElement} from 'lit';
-import {classMap} from 'lit/directives/class-map.js';
+import {isDirectMode, sendMessage} from "../Shared/iframe-messaging.mjs";
+
+
 /**
  * @extends {HTMLElement}
  */
@@ -43,19 +45,18 @@ export class IframePopup extends LitElement {
 
     _click(event) {
         event.preventDefault();
-        if (window.parent === window) {
+        if (isDirectMode) {
             // direct mode, just navigate
             window.location = this.src;
             return;
         }
 
         const message = {
-            command: "editaraOpenModal",
             src: this.src + '%23editara-close',
             title: this.title,
             size: this.size,
         };
-        top.postMessage(message, '*');
+        sendMessage('openModal', message);
     }
 
     render() {

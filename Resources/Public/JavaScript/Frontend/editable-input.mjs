@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
-import {changesStore} from './changes-store.js';
+import {changesStore} from './changes-store.mjs';
 
 /**
  * @extends {HTMLElement}

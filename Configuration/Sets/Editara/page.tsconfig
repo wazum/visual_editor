@@ -1,6 +1,0 @@
-templates.typo3/cms-backend {
-    1759737208 = andersundsehr/editara:Resources/Private/TemplateOverrides
-}
-
-# is nicer this way (and default is 1 in TYPO3 v14)
-mod.web_layout.defLangBinding = 1

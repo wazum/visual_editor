@@ -30,6 +30,7 @@ final readonly class BrickTemplateService
         $result = [];
         $result['TemplateA'] = new BrickTemplate(
             'TemplateA',
+            'Test Element A',
             GeneralUtility::getFileAbsFileName('EXT:aus_project/Resources/Private/Bricks/TemplateA.html'),
             $this->iconFactory->getIcon('mimetypes-text-html', IconSize::SMALL),
             'A simple test template',

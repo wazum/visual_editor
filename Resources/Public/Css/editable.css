@@ -2,10 +2,6 @@
  * Custom styles for CKEditor to make it blend with the surrounding content.
  * TODO move this into the <editable-rte>?
  */
-editable-rte {
-  display: inline-block;
-}
-
 .ck-content {
   background: none !important;
   border: none !important;

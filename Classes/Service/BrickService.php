@@ -105,7 +105,7 @@ final readonly class BrickService
             return;
         }
         $this->assetCollector->addStyleSheet('editable', 'EXT:editara/Resources/Public/Css/editable.css');
-        $this->assetCollector->addJavaScriptModule('@andersundsehr/editara/index.js');
+        $this->assetCollector->addJavaScriptModule('@andersundsehr/editara/Frontend/index.mjs');
 
         if (!$this->assetCollector->hasInlineJavaScript('editaraLangInfo')) {
             $data = [

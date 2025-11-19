@@ -1,14 +1,14 @@
-import './reset-button.js';
-import './translation-selector.js';
-import './editable-input.js';
-import './editable-rte.js';
-import './editara-area-brick.js';
-import './editara-save-button.js';
-import './iframe-popup.js';
-import {highlight} from './spotlight-overlay.js';
+import './reset-button.mjs';
+import './translation-selector.mjs';
+import './editable-input.mjs';
+import './editable-rte.mjs';
+import './editara-area-brick.mjs';
+import './editara-save-button.mjs';
+import './iframe-popup.mjs';
+import {isDirectMode, sendMessage} from '../Shared/iframe-messaging.mjs';
 
 if (window.location.hash === '#editara-close') {
-    top.postMessage({command: "editaraCloseModal"}, '*');
+    sendMessage('closeModal');
     // this closes the window as it was a _target="_blank" opened window from the edit button (eg: editable: link)
     window.close();
 }
@@ -18,10 +18,16 @@ console.log('%cEditara is running!', 'color: green; font-size: 20px; font-weight
 const element = document.createElement('editara-save-button');
 document.body.appendChild(element);
 
-if (window.parent === window) {
+if (isDirectMode) {
     console.log('%cEditara: in direct mode', 'color: red; font-size: 16px;');
 } else {
     console.log('%cEditara: in iframe mode', 'color: orange; font-size: 16px;');
 }
 
-highlight('.editara-focus');
+
+
+setTimeout(() => {
+    window.requestAnimationFrame(() => {
+      // highlight('.editara-focus');
+    });
+}, 50);

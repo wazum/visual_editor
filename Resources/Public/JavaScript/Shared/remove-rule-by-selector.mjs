@@ -33,7 +33,7 @@ function pruneInSheet(sheetOrGroup, selector) {
   for (let i = rules.length - 1; i >= 0; i--) {
     const rule = rules[i];
 
-    if (rule.type === CSSRule.STYLE_RULE) {
+    if (rule instanceof CSSStyleRule || 'selectorText' in rule) {
       // Rule with one or more comma-separated selectors
       const selectors = rule.selectorText.split(",").map(s => s.trim());
       if (selectors.includes(selector)) {

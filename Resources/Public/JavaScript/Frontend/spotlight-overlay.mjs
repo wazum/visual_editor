@@ -36,7 +36,6 @@ function ensureStyle() {
 `;
 
   styleEl = document.createElement('style');
-  styleEl.type = 'text/css';
   styleEl.appendChild(document.createTextNode(css));
   document.head.appendChild(styleEl);
 }
@@ -139,22 +138,69 @@ function onWindowChanged() {
   updateMask();
 }
 
+const resizeObserver = new ResizeObserver(() => onWindowChanged());
+const mutationObserver = new MutationObserver(() => onWindowChanged());
+
 function addListeners() {
   if (listenersAdded) return;
   listenersAdded = true;
 
+  currentTargets.forEach(el => {
+    resizeObserver.observe(el);
+    mutationObserver.observe(el,{
+      subtree: true,
+      childList: true,
+    });
+  });
   window.addEventListener('resize', onWindowChanged);
-  window.addEventListener('scroll', onWindowChanged, { passive: true });
+  window.addEventListener('scroll', onWindowChanged, {passive: true});
 }
 
 function removeListeners() {
   if (!listenersAdded) return;
   listenersAdded = false;
 
+  resizeObserver.disconnect();
+  mutationObserver.disconnect();
   window.removeEventListener('resize', onWindowChanged);
   window.removeEventListener('scroll', onWindowChanged);
+
 }
 
+/**
+ *
+ * @param selectorToHighlight {String}
+ * @returns {HTMLElement[]}
+ */
+function selectElements(selectorToHighlight) {
+  function travers(el) {
+    let result = [];
+    el.querySelectorAll('*').forEach(
+      child => {
+        console.log(child.style.position);
+        if (['absolute', 'fixed'].includes(window.getComputedStyle(child).position)) {
+          result.push(child);
+        }
+        if (child.shadowRoot) {
+          result = [...result, ...travers(child.shadowRoot)];
+        }
+      },
+    );
+    return result;
+  }
+
+  let result = [];
+  document.querySelectorAll(selectorToHighlight).forEach(el => {
+    result.push(el);
+    result = [...result, ...travers(el)];
+    if (el.shadowRoot) {
+      result = [...result, ...travers(el.shadowRoot)];
+    }
+  });
+  return result;
+}
+
+let currentSelectorToHighlight;
 /**
  * Aktiviert das Spotlight-Overlay und schneidet für alle Matches
  * des übergebenen Selectors „Löcher“ ins Overlay.
@@ -162,10 +208,10 @@ function removeListeners() {
  * @param {string} selectorToHighlight
  */
 export function highlight(selectorToHighlight) {
+  currentSelectorToHighlight = selectorToHighlight;
   ensureInfrastructure();
 
-  const nodes = Array.from(document.querySelectorAll(selectorToHighlight));
-  currentTargets = nodes;
+  currentTargets = selectElements(selectorToHighlight);
 
   if (!currentTargets.length) {
     // Nichts zum Highlighten → lieber alles zurücksetzen

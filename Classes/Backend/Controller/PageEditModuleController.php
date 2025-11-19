@@ -95,7 +95,7 @@ class PageEditModuleController
     {
         $this->initialize($request);
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-            JavaScriptModuleInstruction::create('@andersundsehr/editara/middleFrameScript.js')
+            JavaScriptModuleInstruction::create('@andersundsehr/editara/Backend/index.mjs')
         );
 
         $view = $this->moduleTemplateFactory->create($request);
@@ -372,7 +372,7 @@ class PageEditModuleController
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         return $button
-            ->setTag('editara-save-button')
+            ->setTag('editara-backend-save-button')
             ->setAttributes(['disabled' => true])
             ->setLabel('Save')
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))

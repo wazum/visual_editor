@@ -1,9 +1,9 @@
-import {LitElement} from 'lit';
-import {changesStore} from './changes-store.js';
+import {LitElement, css} from 'lit';
+import {changesStore} from './changes-store.mjs';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
-import {removeRuleBySelector} from './removeRuleBySelector.js';
+import {removeRuleBySelector} from '../Shared/remove-rule-by-selector.mjs';
 
 /**
  * @extends {HTMLElement}
@@ -46,6 +46,11 @@ export class EditableRte extends LitElement {
     removeRuleBySelector('.ck.ck-editor__editable_inline > :first-child');
     removeRuleBySelector('.ck.ck-editor__editable_inline > :last-child');
   }
+
+  static style = css`
+    :host {
+      display: block;
+    }`;
 }
 
 customElements.define('editable-rte', EditableRte);

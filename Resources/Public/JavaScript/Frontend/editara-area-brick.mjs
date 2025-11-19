@@ -17,7 +17,7 @@ export class EditableAreaBrick extends LitElement {
   render() {
     return html`
       <div class="border">
-        <span class="button-bar">🍔${this.templateName}</span>
+        <span class="button-bar" draggable="true">⠿ ${this.templateName}</span>
         <slot></slot>
       </div>
     `;
@@ -30,20 +30,21 @@ export class EditableAreaBrick extends LitElement {
 
     .border {
       position: relative;
-      z-index: 10000;
+    //  z-index: 10000;
     }
-
-    .border:hover {
-      box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.5) inset;
-      backdrop-filter: invert(10%);
-    }
+    //
+    //.border:hover {
+    //  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.5) inset;
+    //  backdrop-filter: invert(10%);
+    //}
 
     .button-bar {
+      cursor: grab;
       position: absolute;
       bottom: 100%;
       left: 0;
       background: #000;
-      opacity: 0.5;
+      opacity: 0; /* TODO change to 0.5 */
       color: white;
       padding: 4px;
       min-width: 200px;

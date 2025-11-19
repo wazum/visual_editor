@@ -13,6 +13,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
+use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -29,12 +30,12 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
         if (!$this->shouldSaveStuff($request)) {
             return $handler->handle($request);
         }
-        $this->saveStuff($request);
+        return $this->saveStuff($request); // TODO should we return here, or render the HTML?
 
         return $handler->handle($request);
     }
 
-    private function saveStuff(ServerRequestInterface $request) {
+    private function saveStuff(ServerRequestInterface $request): ResponseInterface {
         $data = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         $pageUid = $this->getPageInformation($request)->getId();
@@ -60,6 +61,7 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
                 $this->dataHandlerService->updateRow($table, (int)$uid, $fields);
             }
         }
+        return new JsonResponse(['success' => true]);
     }
 
     private function shouldSaveStuff(ServerRequestInterface $request)
