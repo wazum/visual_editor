@@ -11,6 +11,7 @@ final readonly class Image implements EditableResult
     public function __construct(
         public string $name,
         public string $html,
+        public Editable $editable,
         public bool $isEmpty,
         public ?FileReference $image,
     ) {}

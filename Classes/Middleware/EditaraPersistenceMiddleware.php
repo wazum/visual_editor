@@ -9,26 +9,48 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
+use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Page\AssetCollector;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 
+use function array_column;
 use function array_key_exists;
+use function implode;
 use function json_decode;
+use function stream_get_contents;
 
 class EditaraPersistenceMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly Context $context, private readonly DataHandlerService $dataHandlerService, private readonly TcaSchemaFactory $tcaSchema) {}
+    /** @var list<\Andersundsehr\Editara\Dto\EditableResult> */
+    public static $editableResults = [];
+
+    public function __construct(
+        private readonly Context $context,
+        private readonly DataHandlerService $dataHandlerService,
+        private readonly TcaSchemaFactory $tcaSchema,
+        private readonly PageRenderer $pageRenderer,
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (!$this->shouldSaveStuff($request)) {
-            return $handler->handle($request);
+            $response = $handler->handle($request);
+
+            $params = $request->getQueryParams();
+            if (isset($params['editara']) && rand(0, 1)) {
+                return new HtmlResponse($this->getHtml()); // TODO make this toggleable
+            }
+            return $response;
         }
         return $this->saveStuff($request); // TODO should we return here, or render the HTML?
 
@@ -122,6 +144,21 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
             throw new \RuntimeException('No frontend page information available');
         }
         return $frontendPageInformation;
+    }
+
+    private function getHtml(): string
+    {
+        $assetIncludes = implode('', $this->pageRenderer->renderJavaScriptAndCss()); // TODO renderJavaScriptAndCss is not public! this will not work
+
+        $editable = '';
+        foreach(self::$editableResults as $editableResult) {
+            $record = $editableResult->editable->record;
+            $fullType = $record->getFullType();
+            $label = '<strong>' . htmlspecialchars($fullType . '[' . $record->getUid() . ']' . $editableResult->editable->field) . ':</strong><br>&nbsp;&nbsp;&nbsp;';
+            $html = $label . $editableResult->html . '<br>';
+            $editable .= '<div style="padding: 5px; border: 1px solid black;">' . $html . '</div>';
+        }
+        return $assetIncludes . $editable;
     }
 
 

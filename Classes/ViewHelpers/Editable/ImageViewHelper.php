@@ -84,6 +84,6 @@ final class ImageViewHelper extends AbstractViewHelper
             $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
             $html .= ' ' . $this->editableService->editButtonForEditable($request, $editable, "Edit image $name");
         }
-        return new Image($name, $html, $image === null, $image);
+        return new Image($name, $html, $editable, $image === null, $image);
     }
 }

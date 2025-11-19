@@ -11,6 +11,7 @@ final readonly class Link implements EditableResult
     public function __construct(
         public string $name,
         public string $html,
+        public Editable $editable,
         public bool $isEmpty,
         public string $href,
         public TypolinkParameter $typolinkParameter,

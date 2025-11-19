@@ -15,6 +15,9 @@ interface EditableResult
     public bool $isEmpty {
         get;
     }
+    public Editable $editable {
+        get;
+    }
 
     public function __toString(): string;
 }

@@ -100,6 +100,6 @@ final class LinkViewHelper extends AbstractViewHelper
             $request = $this->getRenderingContext()->getAttribute(ServerRequestInterface::class);
             $html .= ' ' . $this->editableService->editButtonForEditable($request, $editable, "Edit field $name\n$href\n[$rawTypolinkParameter]");
         }
-        return new Link($name, $html, $typolinkParameter->url === '', $href, $typolinkParameter);
+        return new Link($name, $html, $editable, $typolinkParameter->url === '', $href, $typolinkParameter);
     }
 }

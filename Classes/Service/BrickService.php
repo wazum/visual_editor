@@ -6,6 +6,8 @@ namespace Andersundsehr\Editara\Service;
 
 use Andersundsehr\Editara\Dto\Editable;
 use Andersundsehr\Editara\Enum\EditableType;
+use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -39,6 +41,17 @@ final readonly class BrickService
     {
     }
 
+    public function getEditableFromRecord(RenderingContextInterface $renderingContext, Record $record, string $field, EditableType $type): Editable
+    {
+        $this->getTemplateBrick($renderingContext); // ensure initialized
+        return new Editable(
+            name: $record->getMainType() . '[' . $record->getUid() . ']' . $field,
+            type: $type,
+            field: $field,
+            record: $record,
+        );
+    }
+
     public function getEditable(RenderingContextInterface $renderingContext, string $name, EditableType $type): Editable
     {
         $templateBrick = $this->getTemplateBrick($renderingContext);
@@ -48,13 +61,13 @@ final readonly class BrickService
     private function getEditableFromTemplateBrick(Record $templateBrick, string $name, EditableType $type): Editable
     {
         if (!$name) {
-            throw new \Exception('name must be not empty');
+            throw new Exception('name must be not empty');
         }
 
         $cacheKey = str_replace('\\','_', __CLASS__ . '_' . $templateBrick->getUid() . '_' . $name);
         if ($this->runtimeCache->has($cacheKey)) {
             // enforce single call per editable per rendering
-            throw new \RuntimeException('Editable with name "' . $name . '" already exists in templateBrick:' . $templateBrick->getUid());
+            throw new RuntimeException('Editable with name "' . $name . '" already exists in templateBrick:' . $templateBrick->getUid());
         }
         $this->runtimeCache->set($cacheKey, true);
 

@@ -7,6 +7,7 @@ namespace Andersundsehr\Editara\ViewHelpers\Editable;
 use Andersundsehr\Editara\Dto\Editable;
 use Andersundsehr\Editara\Dto\Input;
 use Andersundsehr\Editara\Enum\EditableType;
+use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
 use Andersundsehr\Editara\Service\BrickService;
 use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
@@ -73,13 +74,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             );
         }
         if ($record && $field) {
-            $this->brickService->getTemplateBrick($this->renderingContext); // ensure initialized
-            $editable = new Editable(
-                name: $record->getMainType() . '[' . $record->getUid() . ']' . $field,
-                type: EditableType::input,
-                field: $field,
-                record: $record,
-            );
+            $editable = $this->brickService->getEditableFromRecord($this->renderingContext, $record, $field, EditableType::input);
         } else {
             $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::input);
         }
@@ -103,7 +98,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         }
 
         if (!$this->brickService->isEditMode()) {
-            return new Input($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
+            return new Input($name, $escapedValue, $editable, ($value ?: $default) === '', $value ?: $default);
         }
 
         $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
@@ -124,6 +119,8 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        return new Input($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
+        $input = new Input($name, $this->tag->render(), $editable, ($value ?: $default) === '', $value ?: $default);
+        EditaraPersistenceMiddleware::$editableResults[] = $input;
+        return $input;
     }
 }

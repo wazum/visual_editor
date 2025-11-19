@@ -10,6 +10,7 @@ use Andersundsehr\Editara\Dto\Editable;
 use Andersundsehr\Editara\Dto\Input;
 use Andersundsehr\Editara\Dto\Rte;
 use Andersundsehr\Editara\Enum\EditableType;
+use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
 use Andersundsehr\Editara\Service\BrickService;
 use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
@@ -82,13 +83,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
             );
         }
         if ($record && $field) {
-            $this->brickService->getTemplateBrick($this->renderingContext); // ensure initialized
-            $editable = new Editable(
-                name: $record->getMainType() . '[' . $record->getUid() . ']' . $field,
-                type: EditableType::rte,
-                field: $field,
-                record: $record,
-            );
+            $editable = $this->brickService->getEditableFromRecord($this->renderingContext, $record, $field, EditableType::rte);
         } else {
             $editable = $this->brickService->getEditable($this->renderingContext, $name, EditableType::rte);
         }
@@ -98,7 +93,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
 
         if (!$this->brickService->isEditMode()) {
             $escapedValue = $this->text2html($value ?: $default);
-            return new Rte($name, $escapedValue, ($value ?: $default) === '', $value ?: $default);
+            return new Rte($name, $escapedValue, $editable, ($value ?: $default) === '', $value ?: $default);
         }
 
         [$options, $processingConfiguration] = $this->getOptions($editable, $default);
@@ -122,7 +117,9 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        return new Rte($name, $this->tag->render(), ($value ?: $default) === '', $value ?: $default);
+        $rte = new Rte($name, $this->tag->render(), $editable, ($value ?: $default) === '', $value ?: $default);
+        EditaraPersistenceMiddleware::$editableResults[] = $rte;
+        return $rte;
     }
 
     private function text2html(string $value): string
