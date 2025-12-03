@@ -38,12 +38,17 @@ export class EditableAreaBrick extends LitElement {
     dragIsOverAbove: {type: Boolean, state: true, attribute: false},
     dragIsOverBelow: {type: Boolean, state: true, attribute: false},
   };
-  _alternativeActions(){
+
+  _addAbove() {
+    alert('ADD ABOVE not implemented yet');
+  }
+
+  _alternativeActions() {
     // TODO implement alternative actions (the same as in the backend page/layout Module)
     alert('not implemented yet');
   }
 
-  _delete(){
+  _delete() {
     // TODO remove in Backend
     this.style.display = 'none';
     alert('SAVE not saved in DB');
@@ -286,17 +291,28 @@ export class EditableAreaBrick extends LitElement {
         </g>
       </svg>
     `;
+    const actionsDocumentAdd = html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
+        <g fill="currentColor">
+          <path d="M7 14H2V2h12v5l1 1V1.5a.5.5 0 0 0-.5-.5h-13a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5H8l-1-1z"/>
+          <path
+            d="M3 3h10v2H3zM3 6h8l-1 1H3zM3 10h4l-1 1H3zM3 12h3v1H3zM3 8h6L8 9H3zM15.5 13H13v2.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V13H8.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5H11V8.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V11h2.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5z"/>
+        </g>
+      </svg>
+    `;
     return html`
       <div class="border ${this.hidden ? 'hidden' : ''}">
         <span class="button-bar ${this.showDropAreas ? 'dragAndDropActive' : ''}" draggable="true"
               @dragstart="${this._dragStart}"
               @dragend="${this._dragEnd}"
         >
-          <span title="uid:${this.uid}">⠿ ${this.elementName}</span>
+          <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
           <a class="button" @click="${this._openEdit}">${actionsOpen}</a><!-- TODO handle this should open popup with content element edit view-->
           <a class="button" @click="${this._toggleHidden}">${toggleIcon}</a>
           <a class="button" @click="${this._delete}">${actionsDelete}</a><!-- TODO handle this should open popup with content element edit view-->
-          <a class="button" @click="${this._alternativeActions}">${actionsMenuAlternative}</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._alternativeActions}">${actionsMenuAlternative}</a>
+          <!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._addAbove}">${actionsDocumentAdd}</a><!-- TODO handle this should open popup with content element edit view-->
         </span>
         ${dropAreaAbove('above')}
         <slot></slot>
@@ -345,6 +361,8 @@ export class EditableAreaBrick extends LitElement {
     }
 
     .button-bar {
+      display: flex;
+      gap: 2px;
       cursor: grab;
       position: absolute;
       bottom: 100%;
@@ -366,6 +384,10 @@ export class EditableAreaBrick extends LitElement {
 
     .button-bar.dragAndDropActive {
       display: none;
+    }
+
+    .button-bar-headline {
+      padding-right: 1em;
     }
 
     .button {
