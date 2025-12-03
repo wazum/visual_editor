@@ -6,6 +6,7 @@ namespace Andersundsehr\Editara\ViewHelpers\Editable;
 
 use Andersundsehr\Editara\Dto\Editable;
 use Andersundsehr\Editara\Dto\Input;
+use Andersundsehr\Editara\Dto\Rte;
 use Andersundsehr\Editara\Enum\EditableType;
 use Andersundsehr\Editara\Middleware\EditaraPersistenceMiddleware;
 use Andersundsehr\Editara\Service\BrickService;
@@ -13,10 +14,16 @@ use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use TYPO3\CMS\Core\Domain\RawRecord;
+use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\Record\ComputedProperties;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use TYPO3Fluid\Fluid\Core\Parser\ParsingState;
+use TYPO3Fluid\Fluid\Core\Parser\SyntaxTree\ViewHelperNode;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
+use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperNodeInitializedEventInterface;
 use function assert;
 use function htmlspecialchars;
 use function str_replace;
@@ -88,7 +95,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
 
         $escapedValue = htmlspecialchars($value);
         if (!$this->brickService->isEditMode()) {
-            $escapedValue = htmlspecialchars($value ?: $default);
+            $escapedValue = htmlspecialchars($value ?: $default ?: '');
         }
 
         if ($allowNewLines) {
@@ -119,7 +126,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
         $this->tag->setContent($escapedValue);
 
         $this->tag->forceClosingTag(true);
-        $input = new Input($name, $this->tag->render(), $editable, ($value ?: $default) === '', $value ?: $default);
+        $input = new Input($name, $this->tag->render(), $editable, ($value ?: $default ?: '') === '', $value ?: $default ?: '');
         EditaraPersistenceMiddleware::$editableResults[] = $input;
         return $input;
     }

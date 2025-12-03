@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionClass;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -44,13 +45,12 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (!$this->shouldSaveStuff($request)) {
-            $response = $handler->handle($request);
-
-            $params = $request->getQueryParams();
-            if (isset($params['editara']) && rand(0, 1)) {
-                return new HtmlResponse($this->getHtml()); // TODO make this toggleable
-            }
-            return $response;
+//            $params = $request->getQueryParams();
+//            if (isset($params['editara']) && true) {
+//                $handler->handle($request);
+//                return new HtmlResponse($this->renderOnlyInputFields());
+//            }
+            return $handler->handle($request);
         }
         return $this->saveStuff($request); // TODO should we return here, or render the HTML?
 
@@ -146,20 +146,20 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
         return $frontendPageInformation;
     }
 
-    private function getHtml(): string
-    {
-        $assetIncludes = implode('', $this->pageRenderer->renderJavaScriptAndCss()); // TODO renderJavaScriptAndCss is not public! this will not work
-
-        $editable = '';
-        foreach(self::$editableResults as $editableResult) {
-            $record = $editableResult->editable->record;
-            $fullType = $record->getFullType();
-            $label = '<strong>' . htmlspecialchars($fullType . '[' . $record->getUid() . ']' . $editableResult->editable->field) . ':</strong><br>&nbsp;&nbsp;&nbsp;';
-            $html = $label . $editableResult->html . '<br>';
-            $editable .= '<div style="padding: 5px; border: 1px solid black;">' . $html . '</div>';
-        }
-        return $assetIncludes . $editable;
-    }
-
-
+//    private function renderOnlyInputFields(): string
+//    {
+//        $reflectionClass = new ReflectionClass($this->pageRenderer);
+//        $assetIncludes = $reflectionClass->getMethod('renderJavaScriptAndCss')->invoke($this->pageRenderer);
+//        $assetIncludes = implode('', $assetIncludes); // TODO renderJavaScriptAndCss is not public! this will not work
+//
+//        $editable = '';
+//        foreach(self::$editableResults as $editableResult) {
+//            $record = $editableResult->editable->record;
+//            $fullType = $record->getFullType();
+//            $label = '<strong>' . htmlspecialchars($fullType . '[' . $record->getUid() . ']' . $editableResult->editable->field) . ':</strong><br>&nbsp;&nbsp;&nbsp;';
+//            $html = $label . $editableResult->html . '<br>';
+//            $editable .= '<div style="padding: 5px; border: 1px solid black;">' . $html . '</div>';
+//        }
+//        return $assetIncludes . $editable;
+//    }
 }
