@@ -29,6 +29,15 @@ export class EditableRte extends LitElement {
     return this;
   }
 
+  constructor() {
+    super();
+
+    changesStore.addEventListener('changes', () => {
+      this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
+      this.valueInitial = changesStore.initial[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+    })
+  }
+
   async firstUpdated() {
     /** @type {HTMLElement} */
     const element = this;
@@ -54,29 +63,3 @@ export class EditableRte extends LitElement {
 }
 
 customElements.define('editable-rte', EditableRte);
-
-
-// document.querySelectorAll('editable-rte').forEach(async (element) => {
-//   const options = JSON.parse(element.getAttribute('options') || '{}');
-//   const table = element.getAttribute('table') || '';
-//   const uid = parseInt(element.getAttribute('uid') || '0', 10);
-//   const field = element.getAttribute('field') || '';
-//
-//   const editor = await initCKEditorInstance(options, element, element, Editor);
-//   editor.model.document.on('change:data', () => {
-//     const value = editor.getData();
-//     changesStore.set(table, uid, field, value, null);
-//     const changed = changesStore.hasChanges(table, uid, field);
-//     if (changed) {
-//       element.setAttribute('changed', 'true');
-//     } else {
-//       element.removeAttribute('changed');
-//     }
-//   });
-//   const html = editor.getData();
-//   changesStore.setInitial(table, uid, field, html, null);
-//
-//   // reset CSS
-//   removeRuleBySelector('.ck.ck-editor__editable_inline > :first-child');
-//   removeRuleBySelector('.ck.ck-editor__editable_inline > :last-child');
-// });

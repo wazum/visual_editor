@@ -81,6 +81,21 @@ class ChangesStore extends EventTarget {
         this.#changes = {};
         this.dispatchEvent(new CustomEvent('changes', {detail: {changes: {}}}));
     }
+
+  markSaved() {
+    for (const table in this.#changes) {
+      for (const uid in this.#changes[table]) {
+        for (const fieldName in this.#changes[table][uid]) {
+          const value = this.#changes[table][uid][fieldName];
+          this.#initial[table] = this.#initial[table] || {};
+          this.#initial[table][uid] = this.#initial[table][uid] || {};
+          this.#initial[table][uid][fieldName] = value;
+        }
+      }
+    }
+    this.#changes = {};
+    this.dispatchEvent(new CustomEvent('changes', {detail: {changes: {}}}));
+  }
 }
 
 export const changesStore = new ChangesStore;

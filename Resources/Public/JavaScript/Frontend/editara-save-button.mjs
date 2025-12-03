@@ -75,19 +75,13 @@ export class EditaraSaveButton extends LitElement {
       return;
     }
 
-    const html = await response.text();
+    // worked, so we mark changes as saved
+    changesStore.markSaved();
     this.saving = false;
     sendMessage('updateChangesCount', 0);
     sendMessage('saveEnded');
-
-    // TODO only replace the changed elements instead of reloading the whole page
-    console.log('Save response:', html);
-
-    if (isDirectMode) {
-      window.location.reload();
-      return;
-    }
-    sendMessage('reloadFrames');
+    return;
+    // sendMessage('reloadFrames'); // TODO if langauge compare is added we need this again.
   }
 
   render() {

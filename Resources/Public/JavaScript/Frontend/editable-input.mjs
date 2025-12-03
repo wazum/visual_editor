@@ -39,6 +39,10 @@ export class EditableInput extends LitElement {
             e.stopPropagation();
             e.preventDefault();
         })
+      changesStore.addEventListener('changes', () => {
+        this.changed = changesStore.hasChanges(this.table, this.uid, this.field);
+        this.valueInitial = changesStore.initial[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
+      })
     }
 
     /**
@@ -63,12 +67,6 @@ export class EditableInput extends LitElement {
     updated(changedProperties) {
         this.changed = this.value !== this.valueInitial;
         changesStore.set(this.table, this.uid, this.field, this.value, this.isSynced ? this.langSyncUid : null);
-
-        if (changedProperties.has('value')) {
-            this.dispatchEvent(new CustomEvent('value-changed', {
-                detail: {value: this.value}, bubbles: true, composed: true
-            }));
-        }
     }
 
     onReset = () => {
