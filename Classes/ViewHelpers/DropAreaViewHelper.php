@@ -32,7 +32,7 @@ final class DropAreaViewHelper extends AbstractViewHelper
             return $this->renderChildren();
         }
 
-        $tag = GeneralUtility::makeInstance(TagBuilder::class, 'editara-drop-area', $this->renderChildren());
+        $tag = GeneralUtility::makeInstance(TagBuilder::class, 'editara-drop-area', $this->renderChildren()); // TODO create editara-drop-area
         $tag->addAttribute('colPos', (string)$this->arguments['colPos']);
         $tag->addAttribute('table', $this->arguments['table']);
         $sysLanguageUid = $this->arguments['sys_language_uid'] ?? GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('language', 'id');

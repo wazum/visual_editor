@@ -49,6 +49,9 @@ final readonly class TtContentStdWrapPreUserFunc
         $div->addAttribute('uid', (string)$record->getUid());
         $div->addAttribute('pid', (string)$record->getPid());
         $div->addAttribute('colPos', $record->get('colPos'));
+        if ($record->getSystemProperties()->isDisabled()) {
+            $div->addAttribute('hidden', 'true');
+        }
         $div->addAttribute('sys_language_uid', $record->getLanguageId());
         $div->setContent($content);
 

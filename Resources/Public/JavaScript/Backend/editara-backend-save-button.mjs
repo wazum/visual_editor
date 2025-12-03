@@ -31,7 +31,6 @@ export class EditaraBackendSaveButton extends LitElement {
     this.disabled = true;
 
     onMessage('updateChangesCount', (count) => {
-      console.log('Update changes count:', count);
       this.count = count;
     });
 

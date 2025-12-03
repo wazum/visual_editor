@@ -32,11 +32,33 @@ export class EditableAreaBrick extends LitElement {
     pid: {type: Number},
     colpos: {type: Number},
     sys_language_uid: {type: Number},
+    hidden: {type: Boolean},
     // areaName: {type: String},
     showDropAreas: {type: Boolean, state: true, attribute: false},
     dragIsOverAbove: {type: Boolean, state: true, attribute: false},
     dragIsOverBelow: {type: Boolean, state: true, attribute: false},
   };
+  _alternativeActions(){
+    // TODO implement alternative actions (the same as in the backend page/layout Module)
+    alert('not implemented yet');
+  }
+
+  _delete(){
+    // TODO remove in Backend
+    this.style.display = 'none';
+    alert('SAVE not saved in DB');
+  };
+
+  _openEdit() {
+    // TODO open modal in Backend
+    alert('EDIT not saved in DB');
+  }
+
+  _toggleHidden() {
+    this.hidden = !this.hidden;
+    // TODO save in Backend
+    alert('HIDE/UNHIDE not saved in DB');
+  }
 
   constructor() {
     super();
@@ -172,7 +194,7 @@ export class EditableAreaBrick extends LitElement {
 
 
     const sourceElement = document.getElementById(data.table + ':' + data.uid);
-    if(event.dataTransfer.dropEffect === 'move') {
+    if (event.dataTransfer.dropEffect === 'move') {
       if (position === 'above') {
         this.parentNode.insertBefore(sourceElement, this);
       } else {
@@ -221,14 +243,60 @@ export class EditableAreaBrick extends LitElement {
     };
 
     const dropAreaAbove = hasPrecedingSibling ? () => null : dropArea;
+
+    // TODO make it possible to use <typo3-backend-icon> here
+    const actionsToggleOff = html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
+        <g fill="currentColor">
+          <path d="M5 5C3.3 5 2 6.3 2 8s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"/>
+          <path d="M11 4c2.2 0 4 1.8 4 4s-1.8 4-4 4H5c-2.2 0-4-1.8-4-4s1.8-4 4-4h6m0-1H5C2.2 3 0 5.2 0 8s2.2 5 5 5h6c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/>
+        </g>
+      </svg>`;
+    const actionsToggleOn = html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
+        <g fill="currentColor">
+          <path d="M11 3H5C2.2 3 0 5.2 0 8s2.2 5 5 5h6c2.8 0 5-2.2 5-5s-2.2-5-5-5zm0 8c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z"/>
+        </g>
+      </svg>`;
+
+    console.log(this.hidden);
+    const toggleIcon = this.hidden ? actionsToggleOff : actionsToggleOn;
+    const actionsOpen = html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
+        <g fill="currentColor">
+          <path
+            d="m9.293 3.293-8 8A.997.997 0 0 0 1 12v3h3c.265 0 .52-.105.707-.293l8-8-3.414-3.414zM8.999 5l.5.5-5 5-.5-.5 5-5zM4 14H3v-1H2v-1l1-1 2 2-1 1zM13.707 5.707l1.354-1.354a.5.5 0 0 0 0-.707L12.354.939a.5.5 0 0 0-.707 0l-1.354 1.354 3.414 3.414z"/>
+        </g>
+      </svg>`;
+    const actionsDelete = html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
+        <g fill="currentColor">
+          <path d="M7 5H6v8h1zM10 5H9v8h1z"/>
+          <path
+            d="M13 3h-2v-.75C11 1.56 10.44 1 9.75 1h-3.5C5.56 1 5 1.56 5 2.25V3H3v10.75c0 .69.56 1.25 1.25 1.25h7.5c.69 0 1.25-.56 1.25-1.25V3zm-7-.75A.25.25 0 0 1 6.25 2h3.5a.25.25 0 0 1 .25.25V3H6v-.75zm6 11.5a.25.25 0 0 1-.25.25h-7.5a.25.25 0 0 1-.25-.25V4h8v9.75z"/>
+          <path d="M13.5 4h-11a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1z"/>
+        </g>
+      </svg>
+    `;
+    const actionsMenuAlternative = html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
+        <g fill="currentColor">
+          <path
+            d="M8.5 9h-1c-.3 0-.5-.2-.5-.5v-1c0-.3.2-.5.5-.5h1c.3 0 .5.2.5.5v1c0 .3-.2.5-.5.5zM8.5 4h-1c-.3 0-.5-.2-.5-.5v-1c0-.3.2-.5.5-.5h1c.3 0 .5.2.5.5v1c0 .3-.2.5-.5.5zM8.5 14h-1c-.3 0-.5-.2-.5-.5v-1c0-.3.2-.5.5-.5h1c.3 0 .5.2.5.5v1c0 .3-.2.5-.5.5z"/>
+        </g>
+      </svg>
+    `;
     return html`
-      <div class="border">
+      <div class="border ${this.hidden ? 'hidden' : ''}">
         <span class="button-bar ${this.showDropAreas ? 'dragAndDropActive' : ''}" draggable="true"
               @dragstart="${this._dragStart}"
               @dragend="${this._dragEnd}"
         >
           <span title="uid:${this.uid}">⠿ ${this.elementName}</span>
-          <a class="button" href="">✏️</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._openEdit}">${actionsOpen}</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._toggleHidden}">${toggleIcon}</a>
+          <a class="button" @click="${this._delete}">${actionsDelete}</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._alternativeActions}">${actionsMenuAlternative}</a><!-- TODO handle this should open popup with content element edit view-->
         </span>
         ${dropAreaAbove('above')}
         <slot></slot>
@@ -262,7 +330,16 @@ export class EditableAreaBrick extends LitElement {
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
     }
 
+    .border.hidden {
+      opacity: 0.5;
+    }
+
+    .border.hidden:after {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
     /* TODO this dose not work, should be visible if the body is hovered */
+
     *:hover > .button-bar {
       opacity: 0.5;
     }
@@ -292,12 +369,14 @@ export class EditableAreaBrick extends LitElement {
     }
 
     .button {
+      display: inline-flex;
       color: white;
       border: 1px solid #666;
       border-radius: 0.2em;
       background-color: #444;
       padding: 0.2em 0.5em;
       text-decoration: none;
+      cursor: pointer;
     }
 
     .button:hover {
