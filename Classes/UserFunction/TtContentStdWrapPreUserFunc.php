@@ -64,6 +64,7 @@ final readonly class TtContentStdWrapPreUserFunc
         $recordTypeLabel = $this->getRecirdTypeLabel($record);
         $div->addAttribute('elementName', $recordTypeLabel);
         $div->addAttribute('table', $table);
+        $div->addAttribute('id', 'cc' . $record->getUid());
         $div->addAttribute('uid', (string)$record->getUid());
         $div->addAttribute('pid', (string)$record->getPid());
         $div->addAttribute('colPos', $colPos);

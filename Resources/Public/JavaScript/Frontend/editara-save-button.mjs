@@ -61,7 +61,7 @@ export class EditaraSaveButton extends LitElement {
     this.saving = true;
     sendMessage('onSave');
     const value = this.changes;
-    const body = JSON.stringify(value, null, 2);
+    const body = JSON.stringify({data: value}, null, 2);
     const response = await fetch(window.location.href, {
       method: 'POST',
       headers: {

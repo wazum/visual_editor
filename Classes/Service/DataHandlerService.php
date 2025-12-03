@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\Service;
 
-use Andersundsehr\Editara\Service\RecordService;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
-use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 use function array_combine;
 use function array_fill;
 use function assert;
@@ -27,7 +24,9 @@ final readonly class DataHandlerService
         private RecordFactory $recordFactory,
         private TcaSchemaFactory $tcaSchema,
         private RecordService $recordService,
-    ) {}
+    )
+    {
+    }
 
     public function createRecordInDb(string $table, array $row): Record
     {
@@ -78,7 +77,8 @@ final readonly class DataHandlerService
         $mapping = $this->recordService->getFullLanguageMappingForPage($table, $pageUid);
         $parentUid = $mapping[$uid][0] ?? throw new \RuntimeException('Could not find parent for ' . $table . ':' . $uid . ' on pid ' . $pageUid);
 
-        $recordUidOfTargetLanguage = $mapping[$parentUid][$languageSyncUid] ?? throw new \Exception('No translation found for ' . $table . ':' . $uid . ' on pid ' . $pageUid . ' for sys_language_uid ' . $languageSyncUid);
+        $recordUidOfTargetLanguage = $mapping[$parentUid][$languageSyncUid]
+            ?? throw new \Exception('No translation found for ' . $table . ':' . $uid . ' on pid ' . $pageUid . ' for sys_language_uid ' . $languageSyncUid);
 
         $translationSource = $this->tcaSchema->get($table)->getCapability(TcaSchemaCapability::Language)->getTranslationSourceField()->getName();
         $this->updateRow($table, $uid, [
@@ -98,6 +98,74 @@ final readonly class DataHandlerService
         $cmd = [];
         $dataHandler->start($data, $cmd);
         $dataHandler->process_datamap();
+        if (count($dataHandler->errorLog) > 0) {
+            throw new \RuntimeException('Error updating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
+        }
+        unset($dataHandler);
+    }
+
+    /**
+     * @param string $table
+     * @param int $uid
+     * @param int $target if > 0 it is the pid (the first position in the list), if < 0 it is -{tt_content.uid} of the record to place it after
+     * @param int $colPos
+     * @param int $sysLanguageUid
+     * @return void
+     */
+    public function moveRecord(string $table, int $uid, int $target, int $colPos, int $sysLanguageUid): void
+    {
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
+        $data = [];
+        $cmd = [
+            $table => [
+                $uid => [
+                    'move' => [
+                        'action' => 'paste',
+                        'target' => $target,
+                        'update' => [
+                            'colPos' => $colPos,
+                            'sys_language_uid' => $sysLanguageUid,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $dataHandler->start($data, $cmd);
+        $dataHandler->process_cmdmap();
+        if (count($dataHandler->errorLog) > 0) {
+            throw new \RuntimeException('Error updating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
+        }
+        unset($dataHandler);
+    }
+
+    /**
+     * @param string $table
+     * @param int $uid
+     * @param int $target if > 0 it is the pid (the first position in the list), if < 0 it is -{tt_content.uid} of the record to place it after
+     * @param int $colPos
+     * @param int $sysLanguageUid
+     * @return void
+     */
+    public function copyRecord(string $table, int $uid, int $target, int $colPos, int $sysLanguageUid): void
+    {
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
+        $data = [];
+        $cmd = [
+            $table => [
+                $uid => [
+                    'copy' => [
+                        'action' => 'paste',
+                        'target' => $target,
+                        'update' => [
+                            'colPos' => $colPos,
+                            'sys_language_uid' => $sysLanguageUid,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $dataHandler->start($data, $cmd);
+        $dataHandler->process_cmdmap();
         if (count($dataHandler->errorLog) > 0) {
             throw new \RuntimeException('Error updating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
         }

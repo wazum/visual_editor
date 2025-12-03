@@ -40,7 +40,6 @@ export function onMessage(command, callback) {
     isMessageListenerInitialized = true;
 
     top.addEventListener('message', (event) => {
-      console.log('Received message:', event.data);
       if (messageListeners[event.data.command]) {
         messageListeners[event.data.command](event.data.detail);
       }

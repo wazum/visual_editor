@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {isDirectMode, sendMessage} from "../Shared/iframe-messaging.mjs";
 
 class Store extends EventTarget {
   #data = null;
@@ -49,7 +50,7 @@ export class EditableAreaBrick extends LitElement {
         return;
       }
 
-      if(data.uid === this.uid && data.table === this.table) {
+      if (data.uid === this.uid && data.table === this.table) {
         this.showDropAreas = false;
         return;
       }
@@ -68,7 +69,7 @@ export class EditableAreaBrick extends LitElement {
    * @param {DragEvent} event
    */
   _dragStart(event) {
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.effectAllowed = 'copyMove';
     event.dataTransfer.clearData();
 
     const info = {
@@ -138,7 +139,7 @@ export class EditableAreaBrick extends LitElement {
    * @param {DragEvent} event
    * @param {'above'|'below'} position
    */
-  _drop(event, position) {
+  async _drop(event, position) {
     const dataString = event.dataTransfer.getData('text/editara-drag');
     if (!dataString) {
       return;
@@ -146,21 +147,43 @@ export class EditableAreaBrick extends LitElement {
     event.preventDefault();
     const data = JSON.parse(dataString);
 
-    const cmd = {
-      [data.table]: {
-        [data.uid]: {
-          move: {
-            action: 'paste',
-            target: position === 'above' ? this.pid : -this.uid,
-            update: {
-              colpos: this.colpos,
-              sys_language_uid: this.sys_language_uid,
-            }
-          }
-        }
+    const sendToServer = {
+      [event.dataTransfer.dropEffect]: {
+        table: data.table,
+        uid: data.uid,
+        target: position === 'above' ? this.pid : -this.uid,
+        colPos: this.colpos,
+        sysLanguageUid: this.sys_language_uid,
       }
-    };
-    console.log('Command to send to server:', JSON.stringify(cmd, null, 2));
+    }
+    // TODO reduce duplicate content, here and in editara-save-button.mjs
+    const response = await fetch(window.location.href, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sendToServer),
+    });
+
+    if (!response.ok) {
+      document.body.innerHTML = await response.text();
+      return;
+    }
+
+    const html = await response.text();
+    this.saving = false;
+    sendMessage('updateChangesCount', 0);
+    sendMessage('saveEnded');
+
+    // TODO only replace the changed elements instead of reloading the whole page
+    console.log('Save response:', html);
+
+    if (isDirectMode) {
+      window.location.reload();
+      return;
+    }
+    // window.location.hash = '#cc' + data.uid; // TODO handle this from the parent, put the content element in the center of the screen after the reload!
+    sendMessage('reloadFrames');
   }
 
   /**
@@ -327,7 +350,7 @@ export class EditableAreaBrick extends LitElement {
       }
     }
     const parentElement = element.parentElement;
-    if(!parentElement) {
+    if (!parentElement) {
       return false;
     }
     return this.isAnyOfMyParents(table, uid, parentElement);

@@ -6,29 +6,20 @@ namespace Andersundsehr\Editara\Middleware;
 
 use Andersundsehr\Editara\Service\DataHandlerService;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
-use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-
-use function array_column;
 use function array_key_exists;
-use function implode;
 use function json_decode;
-use function stream_get_contents;
 
 class EditaraPersistenceMiddleware implements MiddlewareInterface
 {
@@ -40,7 +31,9 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
         private readonly DataHandlerService $dataHandlerService,
         private readonly TcaSchemaFactory $tcaSchema,
         private readonly PageRenderer $pageRenderer,
-    ) {}
+    )
+    {
+    }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -57,31 +50,36 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
         return $handler->handle($request);
     }
 
-    private function saveStuff(ServerRequestInterface $request): ResponseInterface {
+    private function saveStuff(ServerRequestInterface $request): ResponseInterface
+    {
         $data = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         $pageUid = $this->getPageInformation($request)->getId();
 
-
-        foreach($data as $table => $rows) {
-            if(!$this->tcaSchema->has($table)) {
+        foreach ($data['data'] ?? [] as $table => $rows) {
+            if (!$this->tcaSchema->has($table)) {
                 throw new \RuntimeException('Table "' . $table . '" not found in TCA schema');
             }
 
-            foreach($rows ?? [] as $uid => $fields) {
+            foreach ($rows ?? [] as $uid => $fields) {
                 if ($table === 'editable' && array_key_exists('__languageSyncUid', $fields)) {
                     $languageSyncUid = $fields['__languageSyncUid'];
-                    $this->dataHandlerService->setL10nStateForFields($table, (int)$uid, $pageUid,  $languageSyncUid);
+                    $this->dataHandlerService->setL10nStateForFields($table, (int)$uid, $pageUid, $languageSyncUid);
                     unset($fields['__languageSyncUid']);
                 }
 
-                if(!$fields) {
+                if (!$fields) {
                     continue;
                 }
 
-                // TODO check $fields (permissions?)
                 $this->dataHandlerService->updateRow($table, (int)$uid, $fields);
             }
+        }
+        if (isset($data['move'])) {
+            $this->dataHandlerService->moveRecord(...$data['move']);
+        }
+        if (isset($data['copy'])) {
+            $this->dataHandlerService->copyRecord(...$data['copy']);
         }
         return new JsonResponse(['success' => true]);
     }
@@ -100,7 +98,7 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
         }
 
         // only allow application/json content type
-        if($request->getHeaderLine('Content-Type') !== 'application/json') {
+        if ($request->getHeaderLine('Content-Type') !== 'application/json') {
             throw new UnauthorizedException('Content-Type must be application/json to save stuff with editara');
         }
 
