@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Andersundsehr\Editara\Service;
 
+use RuntimeException;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
-use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use function array_combine;
-use function array_fill;
 use function assert;
 use function count;
 use function implode;
+use function in_array;
+use function is_array;
+use function is_int;
 
 final readonly class DataHandlerService
 {
@@ -23,7 +24,6 @@ final readonly class DataHandlerService
     public function __construct(
         private RecordFactory $recordFactory,
         private TcaSchemaFactory $tcaSchema,
-        private RecordService $recordService,
     )
     {
     }
@@ -41,136 +41,109 @@ final readonly class DataHandlerService
 
     public function createRow(string $table, array $row): mixed
     {
-        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
         $data = [
             $table => [
                 'NEW12345' => $row,
             ],
         ];
         $cmd = [];
+
+        $this->validateData($data);
+        $this->validateCmd($cmd);
+
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
         $dataHandler->start($data, $cmd);
         $dataHandler->process_datamap();
         if (count($dataHandler->errorLog) > 0) {
-            throw new \RuntimeException('Error creating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
+            throw new RuntimeException('Error creating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
         }
         $newUid = $dataHandler->substNEWwithIDs['NEW12345'];
         unset($dataHandler);
         return $newUid;
     }
 
-    public function setL10nStateForFields(string $table, int $uid, int $pageUid, int|null $languageSyncUid): void
+    /**
+     * @param array<string, array<int, array<string, bool|int|float|string>>> $data
+     * @param array<string, array<int, array<string, mixed>>> $cmd
+     */
+    public function run(array $data, array $cmd): void
     {
-        $fields = \TYPO3\CMS\Core\DataHandling\Localization\State::getFieldNames($table);
-        if ($languageSyncUid === null) {
-            $this->updateRow($table, $uid, [
-                'l10n_state' => array_combine($fields, array_fill(0, count($fields), 'custom')),
-            ]);
-            return;
-        }
-        if ($languageSyncUid === 0) {
-            $this->updateRow($table, $uid, [
-                'l10n_state' => array_combine($fields, array_fill(0, count($fields), 'parent')),
-            ]);
-            return;
-        }
+        $this->validateData($data);
+        $this->validateCmd($cmd);
 
-        $mapping = $this->recordService->getFullLanguageMappingForPage($table, $pageUid);
-        $parentUid = $mapping[$uid][0] ?? throw new \RuntimeException('Could not find parent for ' . $table . ':' . $uid . ' on pid ' . $pageUid);
-
-        $recordUidOfTargetLanguage = $mapping[$parentUid][$languageSyncUid]
-            ?? throw new \Exception('No translation found for ' . $table . ':' . $uid . ' on pid ' . $pageUid . ' for sys_language_uid ' . $languageSyncUid);
-
-        $translationSource = $this->tcaSchema->get($table)->getCapability(TcaSchemaCapability::Language)->getTranslationSourceField()->getName();
-        $this->updateRow($table, $uid, [
-            $translationSource => $recordUidOfTargetLanguage,
-            'l10n_state' => array_combine($fields, array_fill(0, count($fields), 'source')),
-        ]);
-    }
-
-    public function updateRow(string $table, int $uid, array $fields): void
-    {
         $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
-        $data = [
-            $table => [
-                $uid => $fields,
-            ],
-        ];
-        $cmd = [];
         $dataHandler->start($data, $cmd);
         $dataHandler->process_datamap();
+        $dataHandler->process_cmdmap();
         if (count($dataHandler->errorLog) > 0) {
-            throw new \RuntimeException('Error updating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
+            throw new RuntimeException('Error running DataHandler: ' . implode(', ', $dataHandler->errorLog));
         }
         unset($dataHandler);
     }
 
     /**
-     * @param string $table
-     * @param int $uid
-     * @param int $target if > 0 it is the pid (the first position in the list), if < 0 it is -{tt_content.uid} of the record to place it after
-     * @param int $colPos
-     * @param int $sysLanguageUid
+     * input structure:
+     * [
+     *   'table1' => [
+     *      'uid1' => [ 'field1' => 'value1', 'field2' => 'value2' ],
+     *      'uid2' => [ 'field1' => 'value1', 'field2' => 'value2' ],
+     *    ],
+     *  ],
+     *
+     * @param mixed $data
      * @return void
      */
-    public function moveRecord(string $table, int $uid, int $target, int $colPos, int $sysLanguageUid): void
+    private function validateData(mixed $data): void
     {
-        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
-        $data = [];
-        $cmd = [
-            $table => [
-                $uid => [
-                    'move' => [
-                        'action' => 'paste',
-                        'target' => $target,
-                        'update' => [
-                            'colPos' => $colPos,
-                            'sys_language_uid' => $sysLanguageUid,
-                        ],
-                    ],
-                ],
-            ],
-        ];
-        $dataHandler->start($data, $cmd);
-        $dataHandler->process_cmdmap();
-        if (count($dataHandler->errorLog) > 0) {
-            throw new \RuntimeException('Error updating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
+        if (!is_array($data)) {
+            throw new RuntimeException('Data must be an array of table names to rows');
         }
-        unset($dataHandler);
+        foreach ($data as $table => $rows) {
+            if (!is_array($rows)) {
+                throw new RuntimeException('Rows for table "' . $table . '" must be an array of uid to fields');
+            }
+            $schema = $this->tcaSchema->get($table);
+            foreach ($rows as $uid => $fields) {
+                if (!is_int($uid)) {
+                    throw new RuntimeException('Uid for table "' . $table . '" must be an integer, got ' . $uid);
+                }
+                foreach ($fields as $field => $value) {
+                    if (!$schema->hasField($field)) {
+                        throw new RuntimeException('Field "' . $field . '" not found in TCA schema for table "' . $table . '"');
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * @param string $table
-     * @param int $uid
-     * @param int $target if > 0 it is the pid (the first position in the list), if < 0 it is -{tt_content.uid} of the record to place it after
-     * @param int $colPos
-     * @param int $sysLanguageUid
-     * @return void
+     * input structure:
+     * [
+     *   'table1' => [
+     *      'uid1' => [ 'move' => [...] ],
+     *      'uid2' => [ 'delete' => 1 ],
+     *    ],
      */
-    public function copyRecord(string $table, int $uid, int $target, int $colPos, int $sysLanguageUid): void
+    private function validateCmd(mixed $cmd): void
     {
-        $dataHandler = GeneralUtility::makeInstance(DataHandler::class); // never use DataHandler over DI!!
-        $data = [];
-        $cmd = [
-            $table => [
-                $uid => [
-                    'copy' => [
-                        'action' => 'paste',
-                        'target' => $target,
-                        'update' => [
-                            'colPos' => $colPos,
-                            'sys_language_uid' => $sysLanguageUid,
-                        ],
-                    ],
-                ],
-            ],
-        ];
-        $dataHandler->start($data, $cmd);
-        $dataHandler->process_cmdmap();
-        if (count($dataHandler->errorLog) > 0) {
-            throw new \RuntimeException('Error updating row in table ' . $table . ': ' . implode(', ', $dataHandler->errorLog));
+        if (!is_array($cmd)) {
+            throw new RuntimeException('Data must be an array of table names to rows');
         }
-        unset($dataHandler);
+        foreach ($cmd as $table => $rows) {
+            if (!is_array($rows)) {
+                throw new RuntimeException('Rows for table "' . $table . '" must be an array of uid to fields');
+            }
+            foreach ($rows as $uid => $actions) {
+                if (!is_int($uid)) {
+                    throw new RuntimeException('Uid for table "' . $table . '" must be an integer, got ' . $uid);
+                }
+                foreach ($actions as $actionName => $actionData) {
+                    if (!in_array($actionName, ['move', 'copy', 'delete'], true)) {
+                        throw new RuntimeException('Unknown action "' . $actionName . '" for table "' . $table . '" and uid ' . $uid);
+                    }
+                }
+            }
+        }
     }
-
 
 }

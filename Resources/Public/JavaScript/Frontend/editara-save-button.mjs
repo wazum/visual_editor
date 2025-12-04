@@ -2,6 +2,7 @@ import {css, html, LitElement} from 'lit';
 import {changesStore} from './changes-store.mjs';
 import {isDirectMode, onMessage, sendMessage} from '../Shared/iframe-messaging.mjs';
 import {getObjectLeafCount} from "../Shared/get-object-leaf-count.mjs";
+import {useDataHandler} from "./api.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -60,20 +61,8 @@ export class EditaraSaveButton extends LitElement {
   async _save() {
     this.saving = true;
     sendMessage('onSave');
-    const value = this.changes;
-    const body = JSON.stringify({data: value}, null, 2);
-    const response = await fetch(window.location.href, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: body,
-    });
 
-    if (!response.ok) {
-      document.body.innerHTML = await response.text();
-      return;
-    }
+    await useDataHandler(this.changes);
 
     // worked, so we mark changes as saved
     changesStore.markSaved();

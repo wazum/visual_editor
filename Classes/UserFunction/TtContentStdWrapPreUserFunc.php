@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Andersundsehr\Editara\UserFunction;
 
 use Andersundsehr\Editara\Service\BrickService;
-use Andersundsehr\Editara\Service\EditableService;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
+use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Form\Service\TranslationService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function assert;
@@ -23,6 +23,7 @@ final readonly class TtContentStdWrapPreUserFunc
     public function __construct(
         private RecordFactory $recordFactory,
         private BrickService $brickService,
+        private TcaSchemaFactory $tcaSchema,
     )
     {
     }
@@ -40,6 +41,7 @@ final readonly class TtContentStdWrapPreUserFunc
         $data = $currentContentObject->data;
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $data);
         assert($record instanceof Record);
+        $schema = $this->tcaSchema->get($record->getMainType()); // TODO use getFullType (if flux is not used)
 
         $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-area-brick');
         $recordTypeLabel = $this->getRecirdTypeLabel($record);
@@ -49,6 +51,7 @@ final readonly class TtContentStdWrapPreUserFunc
         $div->addAttribute('uid', (string)$record->getUid());
         $div->addAttribute('pid', (string)$record->getPid());
         $div->addAttribute('colPos', $record->get('colPos'));
+        $div->addAttribute('hiddenFieldName', $schema->getCapability(TcaSchemaCapability::RestrictionDisabledField)->getFieldName());
         if ($record->getSystemProperties()->isDisabled()) {
             $div->addAttribute('hidden', 'true');
         }

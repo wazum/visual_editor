@@ -19,6 +19,11 @@ use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use function array_key_exists;
+use function array_keys;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_int;
 use function json_decode;
 
 class EditaraPersistenceMiddleware implements MiddlewareInterface
@@ -29,8 +34,6 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly Context $context,
         private readonly DataHandlerService $dataHandlerService,
-        private readonly TcaSchemaFactory $tcaSchema,
-        private readonly PageRenderer $pageRenderer,
     )
     {
     }
@@ -45,42 +48,24 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
 //            }
             return $handler->handle($request);
         }
-        return $this->saveStuff($request); // TODO should we return here, or render the HTML?
-
-        return $handler->handle($request);
+        return $this->saveStuff($request);
     }
 
     private function saveStuff(ServerRequestInterface $request): ResponseInterface
     {
-        $data = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $input = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
-        $pageUid = $this->getPageInformation($request)->getId();
+        $data = $input['data'] ?? [];
+        unset($input['data']);
+        $cmd = $input['cmd'] ?? [];
+        unset($input['cmd']);
 
-        foreach ($data['data'] ?? [] as $table => $rows) {
-            if (!$this->tcaSchema->has($table)) {
-                throw new \RuntimeException('Table "' . $table . '" not found in TCA schema');
-            }
-
-            foreach ($rows ?? [] as $uid => $fields) {
-                if ($table === 'editable' && array_key_exists('__languageSyncUid', $fields)) {
-                    $languageSyncUid = $fields['__languageSyncUid'];
-                    $this->dataHandlerService->setL10nStateForFields($table, (int)$uid, $pageUid, $languageSyncUid);
-                    unset($fields['__languageSyncUid']);
-                }
-
-                if (!$fields) {
-                    continue;
-                }
-
-                $this->dataHandlerService->updateRow($table, (int)$uid, $fields);
-            }
+        if (!empty($input)) {
+            throw new \RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmd are allowed');
         }
-        if (isset($data['move'])) {
-            $this->dataHandlerService->moveRecord(...$data['move']);
-        }
-        if (isset($data['copy'])) {
-            $this->dataHandlerService->copyRecord(...$data['copy']);
-        }
+
+        $this->dataHandlerService->run($data, $cmd);
+
         return new JsonResponse(['success' => true]);
     }
 

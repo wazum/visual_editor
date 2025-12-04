@@ -1,5 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {isDirectMode, sendMessage} from "../Shared/iframe-messaging.mjs";
+import {useDataHandler} from "./api.mjs";
 
 class Store extends EventTarget {
   #data = null;
@@ -33,25 +34,13 @@ export class EditableAreaBrick extends LitElement {
     colpos: {type: Number},
     sys_language_uid: {type: Number},
     hidden: {type: Boolean},
+    hiddenFieldName: {type: String},
     // areaName: {type: String},
     showDropAreas: {type: Boolean, state: true, attribute: false},
     dragIsOverAbove: {type: Boolean, state: true, attribute: false},
     dragIsOverBelow: {type: Boolean, state: true, attribute: false},
-  };
 
-  _addAbove() {
-    alert('ADD ABOVE not implemented yet');
-  }
-
-  _alternativeActions() {
-    // TODO implement alternative actions (the same as in the backend page/layout Module)
-    alert('not implemented yet');
-  }
-
-  _delete() {
-    // TODO remove in Backend
-    this.style.display = 'none';
-    alert('SAVE not saved in DB');
+    loading: {type: Boolean, state: true, attribute: true},
   };
 
   _openEdit() {
@@ -59,10 +48,48 @@ export class EditableAreaBrick extends LitElement {
     alert('EDIT not saved in DB');
   }
 
-  _toggleHidden() {
+  async _toggleHidden() {
+    this.loading = true;
+
+    await useDataHandler({
+      [this.table]: {
+        [this.uid]: {
+          [this.hiddenFieldName]: !this.hidden,
+        }
+      }
+    });
     this.hidden = !this.hidden;
-    // TODO save in Backend
-    alert('HIDE/UNHIDE not saved in DB');
+
+    this.loading = false;
+  }
+
+  async _delete() {
+    this.loading = true;
+
+    if (!confirm('Are you sure you want to delete this element?')) {
+      this.loading = false;
+      return;
+    }
+
+    await useDataHandler({}, {
+      [this.table]: {
+        [this.uid]: {
+          delete: 1,
+        }
+      }
+    })
+    this.style.display = 'none';
+
+    this.loading = false;
+  }
+
+  _alternativeActions() {
+    // TODO implement alternative actions (the same as in the backend page/layout Module)
+    alert('not implemented yet');
+  }
+
+  _addAbove() {
+    alert('ADD ABOVE not implemented yet');
   }
 
   constructor() {
@@ -174,29 +201,20 @@ export class EditableAreaBrick extends LitElement {
     event.preventDefault();
     const data = JSON.parse(dataString);
 
-    const sendToServer = {
-      [event.dataTransfer.dropEffect]: {
-        table: data.table,
-        uid: data.uid,
-        target: position === 'above' ? this.pid : -this.uid,
-        colPos: this.colpos,
-        sysLanguageUid: this.sys_language_uid,
+    await useDataHandler({}, {
+      [data.table]: {
+        [data.uid]: {
+          [event.dataTransfer.dropEffect]: {
+            action: 'paste',
+            target: position === 'above' ? this.pid : -this.uid,
+            update: {
+              colPos: this.colpos,
+              sys_language_uid: this.sys_language_uid,
+            },
+          }
+        }
       }
-    }
-    // TODO reduce duplicate content, here and in editara-save-button.mjs
-    const response = await fetch(window.location.href, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(sendToServer),
     });
-
-    if (!response.ok) {
-      document.body.innerHTML = await response.text();
-      return;
-    }
-
 
     const sourceElement = document.getElementById(data.table + ':' + data.uid);
     if (event.dataTransfer.dropEffect === 'move') {
@@ -264,7 +282,6 @@ export class EditableAreaBrick extends LitElement {
         </g>
       </svg>`;
 
-    console.log(this.hidden);
     const toggleIcon = this.hidden ? actionsToggleOff : actionsToggleOn;
     const actionsOpen = html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
@@ -301,7 +318,7 @@ export class EditableAreaBrick extends LitElement {
       </svg>
     `;
     return html`
-      <div class="border ${this.hidden ? 'hidden' : ''}">
+      <div class="border ${this.hidden ? 'hidden' : ''} ${this.loading ? 'loading' : ''}">
         <span class="button-bar ${this.showDropAreas ? 'dragAndDropActive' : ''}" draggable="true"
               @dragstart="${this._dragStart}"
               @dragend="${this._dragEnd}"
@@ -342,8 +359,22 @@ export class EditableAreaBrick extends LitElement {
 
     .border:hover:after {
       outline: 2px ridge black;
-      outline-offset: 2px;
+      outline-offset: 0px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
+    }
+
+    .border.loading:after {
+      animation: textclip 0.6s infinite alternate ease-in-out;
+      border-radius: 2px;
+      background: rgba(0, 0, 0, 0.5);
+      outline: 1px solid black;
+    }
+
+    @keyframes textclip {
+      to {
+        background: rgba(0, 0, 0, 0.95);
+        outline: 1px solid white;
+      }
     }
 
     .border.hidden {
