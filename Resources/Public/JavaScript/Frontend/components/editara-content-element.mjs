@@ -13,7 +13,7 @@ export class EditaraContentElement extends LitElement {
     pid: {type: Number},
     colpos: {type: Number},
     sys_language_uid: {type: Number},
-    hidden: {type: Boolean},
+    isHidden: {type: Boolean},
     hiddenFieldName: {type: String},
 
     dragInProgress: {type: Boolean, state: true, attribute: false},
@@ -32,11 +32,11 @@ export class EditaraContentElement extends LitElement {
     await useDataHandler({
       [this.table]: {
         [this.uid]: {
-          [this.hiddenFieldName]: !this.hidden,
+          [this.hiddenFieldName]: !this.isHidden,
         }
       }
     });
-    this.hidden = !this.hidden;
+    this.isHidden = !this.isHidden;
 
     this.loading = false;
   }
@@ -98,7 +98,7 @@ export class EditaraContentElement extends LitElement {
         </g>
       </svg>`;
 
-    const toggleIcon = this.hidden ? actionsToggleOff : actionsToggleOn;
+    const toggleIcon = this.isHidden ? actionsToggleOff : actionsToggleOn;
     const actionsOpen = html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em">
         <g fill="currentColor">
@@ -134,7 +134,7 @@ export class EditaraContentElement extends LitElement {
       </svg>
     `;
     return html`
-      <div class="border ${this.hidden ? 'hidden' : ''} ${this.loading ? 'loading' : ''}">
+      <div class="border ${this.isHidden ? 'hidden' : ''} ${this.loading ? 'loading' : ''}">
         <editara-drag-handle
           table="${this.table}" uid="${this.uid}"
           class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"

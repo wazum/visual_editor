@@ -53,7 +53,7 @@ final readonly class TtContentStdWrapPreUserFunc
         $div->addAttribute('colPos', $record->get('colPos'));
         $div->addAttribute('hiddenFieldName', $schema->getCapability(TcaSchemaCapability::RestrictionDisabledField)->getFieldName());
         if ($record->getSystemProperties()->isDisabled()) {
-            $div->addAttribute('hidden', 'true');
+            $div->addAttribute('isHidden', 'true');
         }
         $div->addAttribute('sys_language_uid', $record->getLanguageId());
         $div->setContent($content);
