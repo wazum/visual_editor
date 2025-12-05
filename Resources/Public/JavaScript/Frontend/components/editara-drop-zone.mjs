@@ -3,6 +3,7 @@ import {classMap} from 'lit/directives/class-map.js';
 import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
+import {flipInsertBefore} from "@andersundsehr/editara/Frontend/flip-insert-before.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -153,11 +154,11 @@ export class EditableDropZone extends LitElement {
       switch (firstParent.tagName.toLowerCase()) {
         case 'editara-content-element':
           // append after the area brick
-          firstParent.parentNode.insertBefore(sourceElement, firstParent.nextSibling);
+          flipInsertBefore(firstParent.parentNode, sourceElement, firstParent.nextSibling);
           return;
         case 'editara-column':
           // append as first child of the column
-          firstParent.insertBefore(sourceElement, firstParent.firstChild);
+          flipInsertBefore(firstParent, sourceElement, firstParent.firstChild);
           return;
       }
     }
