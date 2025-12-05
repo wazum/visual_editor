@@ -5,7 +5,7 @@
  * Signature matches native insertBefore(parent, node, child)
  * @param {Node} parent
  * @param {Node} node
- * @param {Node} [child]
+ * @param {Node} child
  * @returns {Node} The inserted node.
  */
 export function flipInsertBefore(parent, node, child) {
@@ -13,102 +13,147 @@ export function flipInsertBefore(parent, node, child) {
     throw new Error('insertBefore(parent, node, child) requires at least parent and node.');
   }
 
-  // Respect prefers-reduced-motion: just move, no animation.
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // If the node isn't in the document yet, we have no "old" position to animate from.
-  const wasConnected = node.isConnected;
-
-  if (prefersReducedMotion || !wasConnected) {
-    // Just do the DOM move and exit.
+  // Respect prefers-reduced-motion: just move, no animation.
+  if (prefersReducedMotion) {
     parent.insertBefore(node, child || null);
     return node;
   }
 
-  // 1. FIRST: measure old position and size.
-  const firstRect = node.getBoundingClientRect();
+  // 1. FIRST: snapshot positions + inline styles of all current children.
+  const firstRects = new Map(); // Element -> DOMRect
+  const styleSnapshots = new Map(); // Element -> { transition, transform, transformOrigin }
 
-  // 2. Move via native insertBefore.
-  // If `child` doesn't belong to `parent`, fall back to append.
+  const beforeChildren = Array.from(parent.children);
+  beforeChildren.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    if (!rect || (rect.width === 0 && rect.height === 0)) {
+      // Skip elements we can't meaningfully animate.
+      return;
+    }
+
+    firstRects.set(el, rect);
+    styleSnapshots.set(el, {
+      transition: el.style.transition,
+      transform: el.style.transform,
+      transformOrigin: el.style.transformOrigin,
+    });
+  });
+
+  // Also snapshot the moving node if it lives somewhere else in the DOM
+  // (i.e. moving between parents).
+  if (node.isConnected && !styleSnapshots.has(node)) {
+    const rect = node.getBoundingClientRect();
+    if (rect && !(rect.width === 0 && rect.height === 0)) {
+      firstRects.set(node, rect);
+      styleSnapshots.set(node, {
+        transition: node.style.transition,
+        transform: node.style.transform,
+        transformOrigin: node.style.transformOrigin,
+      });
+    }
+  }
+
+  // 2. DOM CHANGE: perform the actual insertBefore.
   if (child && child.parentNode !== parent) {
+    // If `child` doesn't belong to `parent`, fall back to append.
     parent.insertBefore(node, null);
   } else {
     parent.insertBefore(node, child || null);
   }
 
-  // 3. LAST: measure new position and size.
-  const lastRect = node.getBoundingClientRect();
-
-  // If we somehow can't measure (e.g., display:none), just bail.
-  if (!lastRect || lastRect.width === 0 || lastRect.height === 0) {
-    return node;
-  }
-
-  // 4. INVERT: compute deltas.
-  const deltaX = firstRect.left - lastRect.left;
-  const deltaY = firstRect.top - lastRect.top;
-
-  let scaleX = firstRect.width / lastRect.width;
-  let scaleY = firstRect.height / lastRect.height;
-
-  // Guard against NaN / Infinity.
-  if (!isFinite(scaleX) || scaleX === 0) scaleX = 1;
-  if (!isFinite(scaleY) || scaleY === 0) scaleY = 1;
-
-  // If nothing changed, no animation needed.
-  const noTranslate = Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5;
-  const noScale = Math.abs(scaleX - 1) < 0.01 && Math.abs(scaleY - 1) < 0.01;
-  if (noTranslate && noScale) {
-    return node;
-  }
-
-  // Snapshot inline styles so we can restore them later.
-  const originalTransition = node.style.transition;
-  const originalTransform = node.style.transform;
-  const originalTransformOrigin = node.style.transformOrigin;
-
-  // 5. Apply inverted transform so it visually stays at the "old" position/size.
-  node.style.transition = 'none';
-  node.style.transformOrigin = 'top left';
-  node.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
-
-  // Force a reflow so the browser applies the above styles immediately.
-  node.getBoundingClientRect();
-
-  // Animation settings (tweak if needed).
-  const duration = 200; // ms
+  // 3. LAST: measure new positions and apply inverted transforms.
+  const duration = 300; // ms
   const easing = 'ease-out';
+  const elementsToAnimate = [];
 
-  // 6. PLAY: on the next frame, animate transform back to normal.
+  const afterChildren = Array.from(parent.children);
+  afterChildren.forEach((el) => {
+    const firstRect = firstRects.get(el);
+    if (!firstRect) return; // Element didn't exist before (pure enter); skip here.
+
+    const lastRect = el.getBoundingClientRect();
+    if (!lastRect || (lastRect.width === 0 && lastRect.height === 0)) {
+      return;
+    }
+
+    // Compute deltas for FLIP.
+    const deltaX = firstRect.left - lastRect.left;
+    const deltaY = firstRect.top - lastRect.top;
+
+    let scaleX = firstRect.width / lastRect.width;
+    let scaleY = firstRect.height / lastRect.height;
+
+    if (!isFinite(scaleX) || scaleX === 0) scaleX = 1;
+    if (!isFinite(scaleY) || scaleY === 0) scaleY = 1;
+
+    const noTranslate = Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5;
+    const noScale = Math.abs(scaleX - 1) < 0.01 && Math.abs(scaleY - 1) < 0.01;
+
+    if (noTranslate && noScale) {
+      // No meaningful change → no animation needed.
+      return;
+    }
+
+    const originalStyles =
+      styleSnapshots.get(el) || {
+        transition: el.style.transition,
+        transform: el.style.transform,
+        transformOrigin: el.style.transformOrigin,
+      };
+
+    // INVERT: visually put the element back where it came from.
+    el.style.transition = 'none';
+    el.style.transformOrigin = 'top left';
+    el.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+
+    elementsToAnimate.push({
+      element: el,
+      originalStyles,
+    });
+  });
+
+  // If nothing to animate, we’re done.
+  if (!elementsToAnimate.length) {
+    return node;
+  }
+
+  // Force a reflow so the inverted transforms are applied.
+  parent.getBoundingClientRect();
+
+  // 4. PLAY: animate all affected elements back to their new positions/sizes.
   requestAnimationFrame(() => {
-    // Use a transition on transform to animate back to the final position/size.
-    node.style.transition = `transform ${duration}ms ${easing}`;
-    node.style.transform = originalTransform || '';
+    elementsToAnimate.forEach(({ element, originalStyles }) => {
+      const { transition, transform, transformOrigin } = originalStyles;
 
-    function cleanup() {
-      // Restore original inline styles.
-      node.style.transition = originalTransition || '';
-      node.style.transformOrigin = originalTransformOrigin || '';
-      // If originalTransform was empty string, this is fine; computed styles still apply.
-      node.style.transform = originalTransform || '';
-    }
+      // Animate transform back to the "natural" value.
+      element.style.transition = `transform ${duration}ms ${easing}`;
+      element.style.transform = transform || '';
 
-    function onTransitionEnd(event) {
-      if (event.propertyName !== 'transform') return;
-      node.removeEventListener('transitionend', onTransitionEnd);
-      cleanup();
-    }
+      function cleanup() {
+        element.style.transition = transition || '';
+        element.style.transformOrigin = transformOrigin || '';
+        element.style.transform = transform || '';
+      }
 
-    node.addEventListener('transitionend', onTransitionEnd);
+      function onTransitionEnd(event) {
+        if (event.propertyName !== 'transform') return;
+        element.removeEventListener('transitionend', onTransitionEnd);
+        cleanup();
+      }
 
-    // Fallback in case transitionend never fires (e.g., element removed mid-animation).
-    setTimeout(() => {
-      node.removeEventListener('transitionend', onTransitionEnd);
-      cleanup();
-    }, duration + 100);
+      element.addEventListener('transitionend', onTransitionEnd);
+
+      // Fallback in case transitionend never fires (e.g., element removed mid-animation).
+      setTimeout(() => {
+        element.removeEventListener('transitionend', onTransitionEnd);
+        cleanup();
+      }, duration + 100);
+    });
   });
 
   return node;
