@@ -1,26 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {isDirectMode, sendMessage} from "../Shared/iframe-messaging.mjs";
 import {useDataHandler} from "./api.mjs";
-
-class Store extends EventTarget {
-  #data = null;
-
-  constructor(initialValue) {
-    super();
-    this.#data = initialValue;
-  }
-
-  get value() {
-    return this.#data;
-  }
-
-  set value(value) {
-    this.#data = value;
-    this.dispatchEvent(new Event('change'));
-  }
-}
-
-const dragInProgressStore = new Store(false);
+import {dragInProgressStore} from "./stores/drag-store.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -114,23 +95,6 @@ export class EditableAreaBrick extends LitElement {
 
       this.showDropAreas = true;
     });
-  }
-
-
-  /**
-   * @param {DragEvent} event
-   */
-  _dragStart(event) {
-    event.dataTransfer.effectAllowed = 'copyMove';
-    event.dataTransfer.clearData();
-
-    const info = {
-      table: this.table,
-      uid: this.uid,
-    };
-    event.dataTransfer.setData('text/editara-drag', JSON.stringify(info));
-
-    dragInProgressStore.value = info;
   }
 
   /**
@@ -233,16 +197,6 @@ export class EditableAreaBrick extends LitElement {
     sendMessage('reloadFrames');
   }
 
-  /**
-   * @param {DragEvent} event
-   */
-  _dragEnd(event) {
-    dragInProgressStore.value = false;
-  }
-
-  firstUpdated() {
-  }
-
   render() {
     const hasPrecedingSibling = this.parentElement && this.parentElement.firstElementChild !== this && this.parentElement.firstElementChild instanceof EditableAreaBrick;
 
@@ -317,9 +271,9 @@ export class EditableAreaBrick extends LitElement {
     `;
     return html`
       <div class="border ${this.hidden ? 'hidden' : ''} ${this.loading ? 'loading' : ''}">
-        <span class="button-bar ${this.showDropAreas ? 'dragAndDropActive' : ''}" draggable="true"
-              @dragstart="${this._dragStart}"
-              @dragend="${this._dragEnd}"
+        <editara-drag-handle
+          table="${this.table}" uid="${this.uid}"
+          class="button-bar ${this.showDropAreas ? 'dragAndDropActive' : ''}"
         >
           <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
           <a class="button" @click="${this._openEdit}">${actionsOpen}</a>
@@ -327,7 +281,7 @@ export class EditableAreaBrick extends LitElement {
           <a class="button" @click="${this._delete}">${actionsDelete}</a>
           <a class="button" @click="${this._alternativeActions}">${actionsMenuAlternative}</a>
           <a class="button" @click="${this._addAbove}">${actionsDocumentAdd}</a>
-        </span>
+        </editara-drag-handle>
         ${dropAreaAbove('above')}
         <slot></slot>
         ${dropArea('below')}

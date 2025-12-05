@@ -4,6 +4,7 @@ import './editable-input.mjs';
 import './editable-rte.mjs';
 import './editara-area-brick.mjs';
 import './editara-save-button.mjs';
+import './components/editara-drag-handle.mjs';
 import './iframe-popup.mjs';
 import {onMessage, sendMessage} from '../Shared/iframe-messaging.mjs';
 import {highlight, reset} from "./spotlight-overlay.mjs";
