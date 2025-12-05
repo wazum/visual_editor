@@ -14,16 +14,10 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Page\PageRenderer;
-use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use function array_key_exists;
 use function array_keys;
 use function implode;
-use function in_array;
-use function is_array;
-use function is_int;
 use function json_decode;
 
 class EditaraPersistenceMiddleware implements MiddlewareInterface
@@ -77,16 +71,6 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
             return false;
         }
 
-        // only do something on POST requests
-        if ($request->getMethod() !== 'POST') {
-            return false;
-        }
-
-        // only allow application/json content type
-        if ($request->getHeaderLine('Content-Type') !== 'application/json') {
-            throw new UnauthorizedException('Content-Type must be application/json to save stuff with editara');
-        }
-
         // backend user required
         $user = $this->context->getAspect('backend.user');
         if (!$user instanceof UserAspect) {
@@ -95,6 +79,16 @@ class EditaraPersistenceMiddleware implements MiddlewareInterface
 
         if (!$user->isLoggedIn()) {
             throw new \RuntimeException('not logged in');
+        }
+
+        // only do something on POST requests
+        if ($request->getMethod() !== 'POST') {
+            return false;
+        }
+
+        // only allow application/json content type
+        if ($request->getHeaderLine('Content-Type') !== 'application/json') {
+            throw new UnauthorizedException('Content-Type must be application/json to save stuff with editara');
         }
 
         if ($user->isAdmin()) {

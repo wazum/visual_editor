@@ -11,6 +11,7 @@ use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\EndTimeRestriction;
@@ -171,7 +172,8 @@ window.editaraInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
 
     public function isEditMode(): bool
     {
-        return (bool)($_GET['editara'] ?? false); // TODO use Request object
+        // TODO use Request object
+        return ($_GET['editara'] ?? false) && isset($GLOBALS['BE_USER']) && $GLOBALS['BE_USER'] instanceof BackendUserAuthentication;
     }
 
     /**

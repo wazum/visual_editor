@@ -322,12 +322,11 @@ export class EditableAreaBrick extends LitElement {
               @dragend="${this._dragEnd}"
         >
           <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
-          <a class="button" @click="${this._openEdit}">${actionsOpen}</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._openEdit}">${actionsOpen}</a>
           <a class="button" @click="${this._toggleHidden}">${toggleIcon}</a>
-          <a class="button" @click="${this._delete}">${actionsDelete}</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._delete}">${actionsDelete}</a>
           <a class="button" @click="${this._alternativeActions}">${actionsMenuAlternative}</a>
-          <!-- TODO handle this should open popup with content element edit view-->
-          <a class="button" @click="${this._addAbove}">${actionsDocumentAdd}</a><!-- TODO handle this should open popup with content element edit view-->
+          <a class="button" @click="${this._addAbove}">${actionsDocumentAdd}</a>
         </span>
         ${dropAreaAbove('above')}
         <slot></slot>

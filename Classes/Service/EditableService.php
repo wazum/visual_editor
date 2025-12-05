@@ -30,35 +30,5 @@ final readonly class EditableService
         $iframePopup->addAttribute('size', 'full');
         $iframePopup->setContent('✍️');
         return $iframePopup->render();
-
-        $randomId = 'editara-editable-link-' . bin2hex(random_bytes(5));
-        $params = [
-            'edit' => [$editable->record->getMainType() => [$editable->record->getUid() => 'edit']],
-            'returnUrl' => $request->getAttribute('normalizedParams')->getRequestUri() . '#editara-close',
-            'columnsOnly' => [$editable->record->getMainType() => [$editable->type->getField()],],
-        ];
-        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-        $editRecordUri = (string)$uriBuilder->buildUriFromRoute('record_edit', $params);
-
-        $editButton = new TagBuilder('button');
-        $editButton->addAttribute('class', 'editara-editable-link-button');
-        $editButton->addAttribute('target', '_blank');
-        $editButton->addAttribute('title', $title ?? 'Edit link');
-        $editButton->addAttribute('popovertarget', $randomId);
-
-        $editButton->setContent('✍️');
-
-        $iframe = new TagBuilder('iframe');
-        $iframe->forceClosingTag(true);
-        $iframe->addAttribute('src', $editRecordUri);
-        $iframe->addAttribute('loading', 'lazy');
-        $iframe->addAttribute('class', 'editara-editable-link-iframe');
-
-        $popup = new TagBuilder('div');
-        $popup->addAttribute('class', 'editara-editable-link-popup');
-        $popup->addAttribute('id', $randomId);
-        $popup->addAttribute('popover', null);
-        $popup->setContent($iframe->render());
-        return $editButton->render() . $popup->render();
     }
 }
