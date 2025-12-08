@@ -33,3 +33,7 @@ document.body.appendChild(element);
     highlight('.editara-focus');
   }
 })();
+
+if (window.editaraInfo) {
+  sendMessage('pageChanged', window.editaraInfo.pageId);
+}

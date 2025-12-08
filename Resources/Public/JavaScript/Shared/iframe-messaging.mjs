@@ -11,6 +11,7 @@ export const isDirectMode = window.parent === window;
  * @property onSave {null}
  * @property saveEnded {null}
  * @property spotlight {Boolean}
+ * @property pageChanged {Boolean}
  */
 
 /**
