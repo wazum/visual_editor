@@ -16,14 +16,14 @@ TODO put screenshots here
 
 1. `composer require andersundsehr/visual_editor` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
-3. Add `e:input`, `e:rte`, `e:dropArea` to your templates (see below)
+3. Add `f:editable.input`, `f:editable.rte`, `f:editable.dropArea` to your templates (see below)
 4. Clear caches
 5. Start editing!
 
 ## Where to add the ViewHelpers
 
 ### Input/Rte Fields
-Replace the output of your texts with the `e:input`/`e:rte` ViewHelper.
+Replace the output of your texts with the `f:editable.input`/`f:editable.rte` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html
@@ -31,7 +31,7 @@ before:
 <h1>{record.header}</h1>
 
 after:
-<h1><e:input record="{record}" field="header" /></h1>
+<h1><f:editable.input record="{record}" field="header" /></h1>
 ````
 - data is an array of the complete database row:
 ````html
@@ -39,7 +39,7 @@ before:
 <h1>{data.header}</h1>
 
 after:
-<h1><e:input record="{e:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
+<h1><f:editable.input record="{e:record.fromArray(data: data, table: 'tt_content')}" field="header" /></h1>
 ````
 - you only have the uid and the string you want to output:
 ````html
@@ -47,7 +47,7 @@ before:
 <h1>{header}</h1>
 
 after:
-<h1><e:input record="{e:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
+<h1><f:editable.input record="{e:record.fromUid(uid: uid, table: 'tt_content')}" field="header" /></h1>
 ````  
 
 ### Drop Area
@@ -60,9 +60,9 @@ search for:
   <v:content.render column="0"/>
   
   after:
-  <e:dropArea colPos="0">
+  <f:editable.dropArea colPos="0">
     <v:content.render column="0"/>
-  </e:dropArea>
+  </e:editable.dropArea>
   ````
 - `flux:content.render`:
   ````html
@@ -70,9 +70,9 @@ search for:
   <flux:content.render area="column0"/>
   
   after:
-  <e:dropArea colPos="{data.uid}00">
+  <f:editable.dropArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
-  </e:dropArea>
+  </e:editable.dropArea>
   ````
 - `f:cObject`:
   ````html
@@ -80,9 +80,9 @@ search for:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
   
   after:
-  <e:dropArea colPos="3">
+  <f:editable.dropArea colPos="3">
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{pageUid: '{data.uid}', colPos: '3'}"/>
-  </e:dropArea>
+  </f:editable.dropArea>
   ````
 - TODO example for EXT:container
 - TODO example for EXT:gridelements
