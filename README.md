@@ -1,4 +1,4 @@
-# EXT:visual_editing
+# EXT:visual_editor
 
 Next Generation Frontend Editing for TYPO3 CMS
 
@@ -14,7 +14,7 @@ TODO put screenshots here
 
 ## Installation
 
-1. `composer require andersundsehr/visual_editing` (or install via Extension Manager)
+1. `composer require andersundsehr/visual_editor` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
 3. Add `e:input`, `e:rte`, `e:dropArea` to your templates (see below)
 4. Clear caches
