@@ -12,6 +12,7 @@ export const isDirectMode = window.parent === window;
  * @property saveEnded {null}
  * @property spotlight {Boolean}
  * @property pageChanged {Boolean}
+ * @property openInMiddleFrame {String}
  */
 
 /**

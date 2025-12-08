@@ -146,10 +146,21 @@ class PageEditModuleController
         if ($button = $this->makeEditButton($buttonBar, $request)) {
             $buttonBar->addButton($button);
         }
-        // Edit Page Properties
+        // Spotlight Toggle
         if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
             $buttonBar->addButton($button);
         }
+        /*
+         * TODO add Preview Settings button
+         * Preview Settings: (saved in user preferences)
+         *
+         * Show hidden pages
+         * Show hidden records/content (default on)
+         * Ignore start and end time
+         * Show fluid debug output (maybe not?)
+         * Simulate time [datetime input]
+         * Simulate user group [multi select]
+         */
 
         // Reload
         $reloadButton = $buttonBar->makeLinkButton()

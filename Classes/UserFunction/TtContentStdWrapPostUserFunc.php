@@ -7,6 +7,7 @@ namespace Andersundsehr\Editara\UserFunction;
 use Andersundsehr\Editara\Service\EditaraService;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
@@ -18,12 +19,13 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function assert;
 
 #[Autoconfigure(public: true)]
-final readonly class TtContentStdWrapPreUserFunc
+final readonly class TtContentStdWrapPostUserFunc
 {
     public function __construct(
         private RecordFactory $recordFactory,
         private EditaraService $editaraService,
         private TcaSchemaFactory $tcaSchema,
+        private UriBuilder $backendUriBuilder,
     )
     {
     }
@@ -46,8 +48,9 @@ final readonly class TtContentStdWrapPreUserFunc
         $div = GeneralUtility::makeInstance(TagBuilder::class, 'editara-content-element');
         $contentTypeLabel = $this->getContentTypeLabel($record);
         $div->addAttribute('elementName', $contentTypeLabel);
+        $div->addAttribute('editUrl', $this->getEditUrl($record));
         $div->addAttribute('table', $table);
-        $div->addAttribute('id', $table. ':' . $record->getUid());
+        $div->addAttribute('id', $table . ':' . $record->getUid());
         $div->addAttribute('uid', (string)$record->getUid());
         $div->addAttribute('pid', (string)$record->getPid());
         $div->addAttribute('colPos', $record->get('colPos'));
@@ -70,5 +73,23 @@ final readonly class TtContentStdWrapPreUserFunc
             }
         }
         return $recordType;
+    }
+
+    private function getEditUrl(Record $record): string
+    {
+        $returnUrl = (string)$this->backendUriBuilder->buildUriFromRoute('web_edit', [
+            'id' => $record->getPid(),
+        ]);
+        $params = [
+            // Beispiel: tt_content Datensatz bearbeiten
+            'edit' => [
+                $record->getMainType() => [
+                    $record->getUid() => 'edit',
+                ],
+            ],
+            'returnUrl' => $returnUrl,
+        ];
+
+        return (string)$this->backendUriBuilder->buildUriFromRoute('record_edit', $params);
     }
 }

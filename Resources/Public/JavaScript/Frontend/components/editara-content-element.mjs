@@ -1,6 +1,8 @@
 import {css, html, LitElement} from 'lit';
 import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
+import {popupIframe} from "@andersundsehr/editara/Frontend/iframe-popup.mjs";
+import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -8,6 +10,7 @@ import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-s
 export class EditaraContentElement extends LitElement {
   static properties = {
     elementName: {type: String},
+    editUrl: {type: String},
     table: {type: String},
     uid: {type: Number},
     pid: {type: Number},
@@ -21,9 +24,16 @@ export class EditaraContentElement extends LitElement {
     loading: {type: Boolean, state: true, attribute: true},
   };
 
-  _openEdit() {
-    // TODO open modal in Backend
-    alert('EDIT not saved in DB');
+  /**
+   * @param {MouseEvent} event
+   */
+  _openEdit(event) {
+    // if clicked with middle mouse button or ctrl/cmd key, open in new tab
+    if (event.button === 1 || event.ctrlKey || event.metaKey || isDirectMode) {
+      return;
+    }
+    event.preventDefault();
+    sendMessage('openInMiddleFrame', this.editUrl);
   }
 
   async _toggleHidden() {
@@ -93,7 +103,7 @@ export class EditaraContentElement extends LitElement {
         >
           <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
           <!-- TODO extract button bar as separate component -->
-          <a class="button" @click="${this._openEdit}"><editara-icon name="actions-open"/></a>
+          <a class="button" href="${this.editUrl}" @click="${this._openEdit}"><editara-icon name="actions-open"/></a>
           <a class="button" @click="${this._toggleHidden}"><editara-icon name="${toggleIcon}"/></a>
           <a class="button" @click="${this._delete}"><editara-icon name="actions-delete"/></a>
           <a class="button" @click="${this._alternativeActions}"><editara-icon name="actions-menu-alternative"/></a>

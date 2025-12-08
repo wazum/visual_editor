@@ -1,8 +1,8 @@
 # TODO remove, only for debugging
 config.admPanel = 1
 
-# add <editara-content-element> warpper:
-tt_content.stdWrap.postUserFunc = Andersundsehr\Editara\UserFunction\TtContentStdWrapPreUserFunc->__invoke
+# add <editara-content-element> wrapper:
+tt_content.stdWrap.postUserFunc = Andersundsehr\Editara\UserFunction\TtContentStdWrapPostUserFunc->__invoke
 
 # add parameter editara to every link in edit mode.
 config.linkVars = editara

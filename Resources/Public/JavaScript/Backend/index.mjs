@@ -40,6 +40,10 @@ function openIframeModal(src, title = '', size = 'large') {
 
 onMessage('openModal', (data) => openIframeModal(data.src, data.title || '', data.size || undefined));
 onMessage('reloadFrames', () => reloadAllChildFrames());
+onMessage('openInMiddleFrame', (href) => {
+  window.location = href;
+});
+
 onMessage('pageChanged', (pageId) => {
 
   const newUrl = new URL(window.location.href);
