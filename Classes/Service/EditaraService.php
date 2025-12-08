@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Andersundsehr\Editara\Service;
 
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -14,6 +15,7 @@ final readonly class EditaraService
 {
     public function __construct(
         private AssetCollector $assetCollector,
+        private UriBuilder $uriBuilder,
     )
     {
     }
@@ -46,8 +48,19 @@ final readonly class EditaraService
             assert($attribute instanceof PageInformation);
             $pageId = $attribute->getId();
 
+
+            $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
+                'id' => $pageId,
+                'sys_language_uid' => '__SYS_LANGUAGE_UID__',
+                'colPos' => '__COL_POS__',
+                'uid_pid' => '__UID_PID__',
+                'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+                    'id' => $pageId,
+                ]),
+            ]);
             $data = [
                 'pageId' => $pageId,
+                'newContentUrl' => $newContentUrl,
             ];
             $this->assetCollector->addInlineJavaScript(
                 'editaraLangInfo',

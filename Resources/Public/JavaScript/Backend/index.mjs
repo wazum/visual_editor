@@ -17,10 +17,11 @@ function reloadAllChildFrames() {
  * @param src {string}
  * @param title {string}
  * @param size {'medium' | 'large' | 'full'}
+ * @param type {'iframe' | 'ajax'}
  */
-function openIframeModal(src, title = '', size = 'large') {
+function openIframeModal(src, title = '', size = 'large', type = 'iframe') {
     const modal = Modal.advanced({
-        type: 'iframe',
+        type,
         title,
         content: src,
         size,
@@ -38,7 +39,7 @@ function openIframeModal(src, title = '', size = 'large') {
     });
 }
 
-onMessage('openModal', (data) => openIframeModal(data.src, data.title || '', data.size || undefined));
+onMessage('openModal', (data) => openIframeModal(data.src, data.title || '', data.size || undefined, data.type || undefined));
 onMessage('reloadFrames', () => reloadAllChildFrames());
 onMessage('openInMiddleFrame', (href) => {
   window.location = href;

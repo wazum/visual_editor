@@ -24,6 +24,10 @@ export class EditableDropZone extends LitElement {
     return this.target < 0 ? -this.target : 0;
   }
 
+  get isTop(){
+    return this.target >= 0;
+  }
+
   shouldShow() {
     const data = dragInProgressStore.value;
     if (!data) {
@@ -153,6 +157,7 @@ export class EditableDropZone extends LitElement {
       }
       sourceElement.setAttribute('colPos', this.colPos);
       sourceElement.setAttribute('sys_language_uid', this.sys_language_uid);
+
       switch (firstParent.tagName.toLowerCase()) {
         case 'editara-content-element':
           // append after the area brick
@@ -180,6 +185,7 @@ export class EditableDropZone extends LitElement {
       isOver: this.isOver > 0,
       above: this.target >= 0,
     };
+
     return html`
       <div class=${classMap(classes)}
            @dragover="${this._dragOver}"
@@ -195,6 +201,16 @@ export class EditableDropZone extends LitElement {
   static styles = css`
     :host {
       display: block;
+    }
+    
+    .add-button{
+      border-radius: 0.2em;
+      border: black solid 1px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.5em;
+      width: fit-content;
+      cursor: pointer;
     }
 
     .dropArea {

@@ -3,7 +3,7 @@ export const isDirectMode = window.parent === window;
 
 /**
  * @typedef {Object} EditaraCommandDetailMap
- * @property openModal {{ src: string, title:string, size: 'medium' | 'large' | 'full' }}
+ * @property openModal {{ src: string, title:string, size: 'medium' | 'large' | 'full', type: 'iframe' | 'ajax' }}
  * @property closeModal {null}
  * @property reloadFrames {null}
  * @property updateChangesCount {number}

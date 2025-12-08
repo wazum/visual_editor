@@ -1,4 +1,4 @@
-# EXT:intuitive_editing
+# EXT:visual_editing
 
 Next Generation Frontend Editing for TYPO3 CMS
 
@@ -14,7 +14,7 @@ TODO put screenshots here
 
 ## Installation
 
-1. `composer require andersundsehr/intuitive_editing` (or install via Extension Manager)
+1. `composer require andersundsehr/visual_editing` (or install via Extension Manager)
 2. add the SiteSet to your site configuration
 3. Add `e:input`, `e:rte`, `e:dropArea` to your templates (see below)
 4. Clear caches
@@ -67,7 +67,7 @@ search for:
 - `flux:content.render`:
   ````html
   before:
-  <v:content.render column="0"/>
+  <flux:content.render area="column0"/>
   
   after:
   <e:dropArea colPos="{data.uid}00">

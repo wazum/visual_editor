@@ -2,6 +2,7 @@ import {css, html, LitElement} from 'lit';
 import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
+import {openModal} from "@andersundsehr/editara/Frontend/iframe-popup.mjs";
 
 /**
  * @extends {HTMLElement}
@@ -75,7 +76,14 @@ export class EditaraContentElement extends LitElement {
   }
 
   _addAbove() {
-    alert('ADD ABOVE not implemented yet');
+    // TODO we need to create the content element above the current one (not below)
+
+    const newContentUrl = window.editaraInfo.newContentUrl
+      .replace('__COL_POS__', this.colPos)
+      .replace('__SYS_LANGUAGE_UID__', this.sys_language_uid)
+      .replace('__UID_PID__', -this.uid);
+
+    openModal(newContentUrl, 'new Content', 'large', 'ajax');
   }
 
   constructor() {
@@ -190,6 +198,7 @@ export class EditaraContentElement extends LitElement {
       z-index: 10100;
     }
 
+    /* TODO do not hide if the current element is the draged one */
     .border:hover .button-bar:not(.dragAndDropActive) {
       opacity: 1;
     }

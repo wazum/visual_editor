@@ -1,6 +1,27 @@
 import {css, html, LitElement} from 'lit';
 import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 
+/**
+ * @param {string} src
+ * @param {string} title
+ * @param {'medium' | 'large' | 'full'} size
+ * @param {'iframe' | 'ajax'} type
+ */
+export function openModal(src, title, size = 'large', type = 'iframe') {
+  if (isDirectMode) {
+    // direct mode, just navigate
+    window.location = src;
+    return;
+  }
+
+  const message = {
+    src: src + '%23editara-close',
+    title,
+    size,
+    type,
+  };
+  sendMessage('openModal', message);
+}
 
 /**
  * @extends {HTMLElement}
@@ -10,53 +31,32 @@ export class IframePopup extends LitElement {
         title: {type: String,},
         src: {type: String,},
         size: {type: String,},
+        type: {type: String,},
     };
 
 
     static styles = css`
         button {
             cursor: pointer;
-        }
-
-        iframe {
-            border: none;
-
-            &.full {
-                width: 95vw;
-                height: 95vh;
-            }
-
-            &.large {
-                width: 75vw;
-                height: 95vh;
-            }
-
-            &.medium {
-                width: 60vw;
-                height: 85vh;
-            }
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
     `;
 
     constructor() {
         super();
         this.size = 'large';
+        this.type = 'iframe';
     }
 
     _click(event) {
-        event.preventDefault();
-        if (isDirectMode) {
-            // direct mode, just navigate
-            window.location = this.src;
-            return;
-        }
-
-        const message = {
-            src: this.src + '%23editara-close',
-            title: this.title,
-            size: this.size,
-        };
-        sendMessage('openModal', message);
+      event.preventDefault();
+      const title = this.title;
+      const size = this.size;
+      const type = this.type;
+      const src = this.src;
+      openModal(src, title, size, type);
     }
 
     render() {

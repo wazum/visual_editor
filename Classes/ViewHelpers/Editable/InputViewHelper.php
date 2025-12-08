@@ -8,7 +8,6 @@ use Andersundsehr\Editara\EditableResult\Input;
 use Andersundsehr\Editara\Service\EditaraService;
 use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
