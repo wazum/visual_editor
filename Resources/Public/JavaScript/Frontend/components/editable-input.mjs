@@ -77,9 +77,17 @@ export class EditableInput extends LitElement {
                     <reset-button @click="${this.onReset}"></reset-button>
                 </div>`;
         }
+        const parentIsInline = getComputedStyle(this.parentElement).display.startsWith('inline');
+        /** @type {HTMLElement} */
+        const e = this;
+        if (parentIsInline) {
+          this.classList.remove('block');
+        } else {
+          this.classList.add('block');
+        }
         return html`
             <span
-                    class=${classMap({slot: true, synced: this.isSynced, changed: this.changed,})}
+                    class=${classMap({slot: true, synced: this.isSynced, changed: this.changed, block: !parentIsInline})}
                     style="--button-count: ${buttonCount};"
                     contenteditable="${this.isSynced ? 'false' : 'plaintext-only'}"
                     role="textbox"
@@ -108,9 +116,12 @@ export class EditableInput extends LitElement {
         display: inline-block;
         --button-size: min(0.8em, 32px);
       }
+      :host(.block) {
+        display: block;
+      }
 
       .slot {
-        min-width: 5px;
+        min-width: 15px;
         display: inline-block;
         min-height: 1lh;
 
@@ -139,6 +150,9 @@ export class EditableInput extends LitElement {
         box-shadow: 0 0 4px 0 rgba(0,0,0,0.50) inset;
         outline: 0;
         backdrop-filter: blur(10px) invert(20%);
+      }
+      .slot.block {
+        display: block;
       }
 
       .slot.synced {
