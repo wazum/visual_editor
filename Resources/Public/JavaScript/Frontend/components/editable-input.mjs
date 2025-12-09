@@ -116,6 +116,7 @@ export class EditableInput extends LitElement {
         display: inline-block;
         --button-size: min(0.8em, 32px);
       }
+
       :host(.block) {
         display: block;
       }
@@ -135,10 +136,8 @@ export class EditableInput extends LitElement {
         //box-sizing: content-box !important;
 
         // problem with this: element is to big, even if margin is negative */
-        padding: 4px
-            calc(4px + var(--button-size) * var(--button-count) + 4px * 2 * var(--button-count))
-            4px
-            4px;
+        --padding-right: calc(4px + var(--button-size) * var(--button-count) + 4px * 2 * var(--button-count));
+        padding: 4px var(--padding-right) 4px 4px;
         margin: -4px;
 
         &:after {
@@ -146,11 +145,14 @@ export class EditableInput extends LitElement {
           color: #555;
         }
       }
+
       .slot:hover, .slot:focus {
-        box-shadow: 0 0 4px 0 rgba(0,0,0,0.50) inset;
+        box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.50) inset;
         outline: 0;
         backdrop-filter: blur(10px) invert(20%);
+        outline: 0.25rem solid #5432fe;
       }
+
       .slot.block {
         display: block;
       }

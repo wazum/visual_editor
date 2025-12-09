@@ -142,7 +142,7 @@ export class EditaraContentElement extends LitElement {
     }
 
     .border:hover:after {
-      outline: 2px ridge black;
+      outline: 1px solid #d1d1d1;
       outline-offset: 0px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
     }
@@ -157,7 +157,7 @@ export class EditaraContentElement extends LitElement {
     @keyframes textclip {
       to {
         background: rgba(0, 0, 0, 0.95);
-        outline: 1px solid white;
+        outline: 1px solid #d1d1d1;
       }
     }
 
@@ -180,19 +180,21 @@ export class EditaraContentElement extends LitElement {
       cursor: grab;
       position: absolute;
       bottom: 100%;
-      left: 0;
+      left: -1px;
       background: #000;
       opacity: 0.001;
       /*opacity: 0.5;*/
       color: white;
+      border: 1px solid #d1d1d1;
       padding: 4px;
       min-width: 200px;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
       z-index: 10100;
     }
 
     /* TODO do not hide if the current element is the draged one */
+
     .border:hover .button-bar:not(.dragAndDropActive) {
       opacity: 1;
     }
