@@ -147,7 +147,7 @@ function addListeners() {
 
   currentTargets.forEach(el => {
     resizeObserver.observe(el);
-    mutationObserver.observe(el,{
+    mutationObserver.observe(el, {
       subtree: true,
       childList: true,
     });

@@ -1,4 +1,4 @@
-import {css, html, LitElement} from 'lit';
+import {html, LitElement} from 'lit';
 import {sendMessage} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 
 

@@ -2,14 +2,14 @@ import Modal from '@typo3/backend/modal.js';
 import {onMessage, stopListeningMessages} from '@andersundsehr/editara/Shared/iframe-messaging.mjs';
 import '@andersundsehr/editara/Backend/editara-backend-save-button.mjs';
 import '@andersundsehr/editara/Backend/editara-spotlight-toggle.mjs';
-import { ModuleStateStorage } from '@typo3/backend/storage/module-state-storage.js';
+import {ModuleStateStorage} from '@typo3/backend/storage/module-state-storage.js';
 
 
 function reloadAllChildFrames() {
-    const iframes = document.querySelectorAll('iframe');
-    iframes.forEach((iframe) => {
-        iframe.contentWindow.location.reload();
-    });
+  const iframes = document.querySelectorAll('iframe');
+  iframes.forEach((iframe) => {
+    iframe.contentWindow.location.reload();
+  });
 }
 
 /**
@@ -20,23 +20,23 @@ function reloadAllChildFrames() {
  * @param type {'iframe' | 'ajax'}
  */
 function openIframeModal(src, title = '', size = 'large', type = 'iframe') {
-    const modal = Modal.advanced({
-        type,
-        title,
-        content: src,
-        size,
-        staticBackdrop: true,
-    });
+  const modal = Modal.advanced({
+    type,
+    title,
+    content: src,
+    size,
+    staticBackdrop: true,
+  });
 
-    onMessage('closeModal', () => {
-      modal.hideModal();
+  onMessage('closeModal', () => {
+    modal.hideModal();
 
-      // remove listener after use
-      stopListeningMessages('closeModal');
+    // remove listener after use
+    stopListeningMessages('closeModal');
 
-      // reload all child iframes:
-      reloadAllChildFrames();
-    });
+    // reload all child iframes:
+    reloadAllChildFrames();
+  });
 }
 
 onMessage('openModal', (data) => openIframeModal(data.src, data.title || '', data.size || undefined, data.type || undefined));

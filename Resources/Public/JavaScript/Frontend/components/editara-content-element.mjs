@@ -1,5 +1,4 @@
 import {css, html, LitElement} from 'lit';
-import {useDataHandler} from "@andersundsehr/editara/Frontend/api.mjs";
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 import {isDirectMode, sendMessage} from "@andersundsehr/editara/Shared/iframe-messaging.mjs";
 import {openModal} from "@andersundsehr/editara/Frontend/iframe-popup.mjs";
@@ -87,10 +86,18 @@ export class EditaraContentElement extends LitElement {
         >
           <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
           <!-- TODO extract button bar as separate component -->
-          <a class="button" href="${this.editUrl}" @click="${this._openEdit}"><editara-icon name="actions-open"/></a>
-          <a class="button" @click="${this._toggleHidden}"><editara-icon name="${toggleIcon}"/></a>
-          <a class="button" @click="${this._delete}"><editara-icon name="actions-delete"/></a>
-          <a class="button" @click="${this._addAbove}"><editara-icon name="actions-document-add"/></a>
+          <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
+            <editara-icon name="actions-open"/>
+          </a>
+          <a class="button" @click="${this._toggleHidden}">
+            <editara-icon name="${toggleIcon}"/>
+          </a>
+          <a class="button" @click="${this._delete}">
+            <editara-icon name="actions-delete"/>
+          </a>
+          <a class="button" @click="${this._addAbove}">
+            <editara-icon name="actions-document-add"/>
+          </a>
         </editara-drag-handle>
         <slot></slot>
         <editara-drop-zone

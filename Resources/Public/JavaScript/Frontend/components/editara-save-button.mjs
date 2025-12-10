@@ -64,7 +64,7 @@ export class EditaraSaveButton extends LitElement {
     dataHandlerStore.markSaved();
     this.saving = false;
     sendMessage('saveEnded');
-    return;
+
     // sendMessage('reloadFrames'); // TODO if langauge compare is added we need this again.
   }
 

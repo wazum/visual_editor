@@ -1,4 +1,4 @@
-import {css, html, LitElement} from 'lit';
+import {css, LitElement} from 'lit';
 import {dragInProgressStore} from "@andersundsehr/editara/Frontend/stores/drag-store.mjs";
 
 /**

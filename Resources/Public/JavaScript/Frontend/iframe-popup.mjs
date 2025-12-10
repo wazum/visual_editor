@@ -27,15 +27,15 @@ export function openModal(src, title, size = 'large', type = 'iframe') {
  * @extends {HTMLElement}
  */
 export class IframePopup extends LitElement {
-    static properties = {
-        title: {type: String,},
-        src: {type: String,},
-        size: {type: String,},
-        type: {type: String,},
-    };
+  static properties = {
+    title: {type: String,},
+    src: {type: String,},
+    size: {type: String,},
+    type: {type: String,},
+  };
 
 
-    static styles = css`
+  static styles = css`
         button {
             cursor: pointer;
             display: inline-flex;
@@ -44,28 +44,28 @@ export class IframePopup extends LitElement {
         }
     `;
 
-    constructor() {
-        super();
-        this.size = 'large';
-        this.type = 'iframe';
-    }
+  constructor() {
+    super();
+    this.size = 'large';
+    this.type = 'iframe';
+  }
 
-    _click(event) {
-      event.preventDefault();
-      const title = this.title;
-      const size = this.size;
-      const type = this.type;
-      const src = this.src;
-      openModal(src, title, size, type);
-    }
+  _click(event) {
+    event.preventDefault();
+    const title = this.title;
+    const size = this.size;
+    const type = this.type;
+    const src = this.src;
+    openModal(src, title, size, type);
+  }
 
-    render() {
-        return html`
+  render() {
+    return html`
             <button @click="${this._click}" title="${this.title}">
                 <slot/>
             </button>
         `;
-    }
+  }
 }
 
 customElements.define('iframe-popup', IframePopup);

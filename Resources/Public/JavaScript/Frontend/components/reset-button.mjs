@@ -5,7 +5,7 @@ import {css, html, LitElement} from 'lit';
  */
 export class ResetButton extends LitElement {
 
-    static styles = css`
+  static styles = css`
         button {
             display: flex;
             background: none;
@@ -18,19 +18,19 @@ export class ResetButton extends LitElement {
         }
     `;
 
-    _click(){
-        this.dispatchEvent(new Event('click', {
-            bubbles: true, composed: true
-        }));
-    }
+  _click() {
+    this.dispatchEvent(new Event('click', {
+      bubbles: true, composed: true
+    }));
+  }
 
-    render() {
-        return html`
-            <button @click="${this._click}" title="Reset changes">
-                <editara-icon name="actions-undo" width="100%"/>
-            </button>
-        `;
-    }
+  render() {
+    return html`
+      <button @click="${this._click}" title="Reset changes">
+        <editara-icon name="actions-undo" width="100%"/>
+      </button>
+    `;
+  }
 }
 
 customElements.define('reset-button', ResetButton);

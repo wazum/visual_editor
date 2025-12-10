@@ -127,8 +127,8 @@ export function flipInsertBefore(parent, node, child) {
 
   // 4. PLAY: animate all affected elements back to their new positions/sizes.
   requestAnimationFrame(() => {
-    elementsToAnimate.forEach(({ element, originalStyles }) => {
-      const { transition, transform, transformOrigin } = originalStyles;
+    elementsToAnimate.forEach(({element, originalStyles}) => {
+      const {transition, transform, transformOrigin} = originalStyles;
 
       // Animate transform back to the "natural" value.
       element.style.transition = `transform ${duration}ms ${easing}`;
