@@ -1,4 +1,4 @@
-import {css, LitElement} from 'lit';
+import {LitElement} from 'lit';
 import {ClassicEditor as Editor} from '@ckeditor/ckeditor5-editor-classic';
 // import {InlineEditor as Editor} from '@ckeditor/ckeditor5-editor-inline'; // TODO fix issues with inline editor
 import {initCKEditorInstance} from '@typo3/rte-ckeditor/init-ckeditor-instance.js';
@@ -54,10 +54,10 @@ export class EditableRte extends LitElement {
     removeRuleBySelector('.ck.ck-editor__editable_inline > :last-child');
   }
 
-  static style = css`
-    :host {
-      display: block;
-    }`;
+  /**
+   * Styles are in editable.css
+   *
+   */
 }
 
 customElements.define('editable-rte', EditableRte);

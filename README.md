@@ -1,16 +1,17 @@
-# EXT:visual_editor
+# TYPO3 extension `visual_editor`
+___
 
-Next Generation Frontend Editing for TYPO3 CMS
+Next Generation Frontend Editing for TYPO3 CMS.
 
-This extension provides intuitive editing features for content elements in TYPO3 CMS.
+This extension provides visual editing features for content elements in TYPO3 CMS.
 
 ## Features
 - Inline editing It looks perfectly like the frontend output (WYSIWYG)
-- Drag-and-drop repositioning of content elements
+- Drag-and-drop repositioning of content elements (adding and deleting elements)
 - Real-time preview of changes without page reloads
 - User-friendly interface for non-technical editors
 
-TODO put screenshots here
+TODO put gifs here
 
 ## Installation
 

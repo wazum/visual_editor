@@ -28,7 +28,7 @@ export class EditaraBackendAutoSaveButton extends LitElement {
 
     const setting = localStorage.getItem('editara-autosave-active');
     // if user has a stored setting, use that:
-    if(setting === 'true' || setting === 'false') {
+    if (this.active && setting === 'true' || setting === 'false') {
       this.active = setting === 'true';
     }
   }
