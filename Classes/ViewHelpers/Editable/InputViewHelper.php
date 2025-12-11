@@ -10,6 +10,8 @@ use Andersundsehr\Editara\Service\RecordService;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Domain\RecordInterface;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
@@ -26,6 +28,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
     public function __construct(
         private readonly EditaraService $editaraService,
         private readonly RecordService $recordService,
+        private readonly TcaSchemaFactory $tcaSchema,
     ) {
         parent::__construct();
     }
@@ -65,7 +68,7 @@ final class InputViewHelper extends AbstractTagBasedViewHelper
             );
         }
 
-        $name = $record->getMainType() . '[' . $record->getUid() . '][' . $field . ']';
+        $name = LocalizationUtility::translate($this->tcaSchema->get($record->getMainType())->getField($field)->getLabel());
 
         $value = $record->get($field) ?? '';
         $value = str_replace("\r\n", "\n", $value);

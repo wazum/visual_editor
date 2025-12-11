@@ -18,6 +18,7 @@ use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
@@ -75,7 +76,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
             );
         }
 
-        $name = $record->getMainType() . '[' . $record->getUid() . '][' . $field . ']';
+        $name = LocalizationUtility::translate($this->tcaSchema->get($record->getMainType())->getField($field)->getLabel());
 
         $value = $record->get($field) ?? '';
 
@@ -93,7 +94,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->tag->addAttribute('field', $field);
 
         $this->tag->addAttribute('name', $name);
-        $this->tag->addAttribute('title', 'Edit field ' . $name);
+        $this->tag->addAttribute('title', 'Edit field ' . $name); // TODO label
         $this->tag->addAttribute('placeholder', $default);
         $this->tag->addAttribute('options', $options);
 

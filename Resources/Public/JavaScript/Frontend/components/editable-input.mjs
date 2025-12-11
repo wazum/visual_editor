@@ -60,6 +60,7 @@ export class EditableInput extends LitElement {
   updated(changedProperties) {
     this.changed = this.value !== this.valueInitial;
     dataHandlerStore.setData(this.table, this.uid, this.field, this.value);
+    this.classList.toggle('empty', this.value === '');
   }
 
   onReset = () => {
@@ -119,6 +120,11 @@ export class EditableInput extends LitElement {
 
     :host(.block) {
       display: block;
+    }
+    :host(.empty) {
+      display: inline !important;
+      /* we do not want that it takes up any vertical space. */
+      line-height: 0 !important;
     }
 
     .slot {
