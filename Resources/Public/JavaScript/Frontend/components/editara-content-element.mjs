@@ -168,7 +168,7 @@ export class EditaraContentElement extends LitElement {
       z-index: 10100;
     }
 
-    /* TODO do not hide if the current element is the draged one */
+    /* TODO do not hide if the current element is the dragged one */
 
     .border:hover .button-bar:not(.dragAndDropActive) {
       opacity: 1;

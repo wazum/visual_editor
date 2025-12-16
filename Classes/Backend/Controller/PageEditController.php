@@ -184,7 +184,7 @@ class PageEditController
          * Preview Settings: (saved in user preferences)
          *
          * Show hidden pages
-         * Show hidden records/content (default on)
+         * Show hidden records/content (default on) (Admin panel dose not work with workspaces, dose not show hidden records even if selected)
          * Ignore start and end time
          * Show fluid debug output (maybe not?)
          * Simulate time [datetime input]
