@@ -8,6 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Page\AssetCollector;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use function assert;
 
@@ -16,6 +17,7 @@ final readonly class EditModeService
     public function __construct(
         private AssetCollector $assetCollector,
         private UriBuilder $uriBuilder,
+        private PageRenderer $pageRenderer,
     )
     {
     }
@@ -39,6 +41,9 @@ final readonly class EditModeService
         }
         $this->assetCollector->addStyleSheet('editable', 'EXT:visual_editor/Resources/Public/Css/editable.css');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
+        $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
+
+        $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
 
         if (!$this->assetCollector->hasInlineJavaScript('veLangInfo')) {
             $request = $GLOBALS['TYPO3_REQUEST'];

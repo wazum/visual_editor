@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from "@typo3/core/lit-helper.js";
 import {isDirectMode, onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
 import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
@@ -78,17 +79,18 @@ export class VeSaveButton extends LitElement {
     if (!this.count) {
       return html``;
     }
+
+    let label = this.count === 1 ? lll('save.change') : lll('save.changes', this.count);
+    label += ' ✏️';
+    if (this.saving) {
+      label = lll('saving');
+    }
     return html`
       <button
         @click=${this._save}
         ?disabled="${this.saving}"
       >
-        ${
-          this.saving
-            ? html`💾 Saving...`
-            : html`Save ${this.count} ✏️ changes`
-        }
-
+        ${label}
       </button>
     `;
   }

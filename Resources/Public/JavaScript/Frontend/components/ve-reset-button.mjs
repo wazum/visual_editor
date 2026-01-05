@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from "@typo3/core/lit-helper.js";
 
 /**
  * @extends {HTMLElement}
@@ -26,7 +27,7 @@ export class VeResetButton extends LitElement {
 
   render() {
     return html`
-      <button @click="${this._click}" title="Reset changes">
+      <button @click="${this._click}" title="${lll('frontend.resetChanges')}">
         <ve-icon name="actions-undo" width="100%"/>
       </button>
     `;

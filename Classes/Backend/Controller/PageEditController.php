@@ -92,7 +92,7 @@ class PageEditController
         $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
         $this->selectedLanguage = $site->getLanguageById((int)($this->moduleData->get('language') ?? 0));
-//        $this->pageRenderer->addInlineLanguageLabelFile('EXT:backend/Resources/Private/Language/locallang_layout.xlf');
+        $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
         $this->schema = $this->tcaSchemaFactory->get('pages');
     }
 
@@ -411,7 +411,6 @@ class PageEditController
             return null;
         }
 
-
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         $active = $this->getBackendUser()->workspace;
@@ -421,12 +420,13 @@ class PageEditController
                 ...($active ? [] : ['disabled' => true]),
                 'workspace' => $active,
                 'isWorkspaceInstalled' => $this->packageManager->isPackageActive('workspaces'),
-                'data-bs-toggle' => 'tooltip',
-                'data-bs-html' => 'true',
             ])
-            ->setLabel('Autosave') // TODO label
+            ->setLabel(
+                $this->getLanguageService()->sL($active ?
+                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave':
+                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave.disabled'
+            ))
             ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
-            ->setTitle($active ? 'Autosave is to Workspace' : 'to enable, switch to a Workspace') // TODO label
             ->setShowLabelText(true);
     }
 
@@ -450,7 +450,7 @@ class PageEditController
         return $button
             ->setTag('ve-backend-save-button')
             ->setAttributes(['disabled' => true])
-            ->setLabel('Save')
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:save'))
             ->setIcon($this->iconFactory->getIcon('actions-save', IconSize::SMALL))
             ->setShowLabelText(true);
     }

@@ -1,5 +1,5 @@
 import {html, LitElement} from 'lit';
-import {spotlightActive} from "@typo3/visual-editor/Shared/local-store.js";
+import {spotlightActive} from "@typo3/visual-editor/Shared/stores.js";
 
 
 /**

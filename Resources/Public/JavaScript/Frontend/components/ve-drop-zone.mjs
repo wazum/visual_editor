@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from "@typo3/core/lit-helper.js";
 import {classMap} from 'lit/directives/class-map.js';
 import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
 import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
@@ -138,9 +139,10 @@ export class VeDropZone extends LitElement {
     };
 
     if (event.dataTransfer.dropEffect === 'copy') {
-      // For copy we ask the user and if confirmed we do an immediate useDataHandler call
+      // For copy we ask the user and if confirmed we do an immediate call useDataHandler
       // if not, we do nothing
-      const question = (dataHandlerStore.changesCount > 1 ? 'Save all changes, and ' : '') + 'copy the element?'; // TODO label
+      const question = dataHandlerStore.changesCount > 0 ? lll('frontend.confirmCopy.saveAll') : lll('frontend.confirmCopy');
+      // TODO use modal dialog from core
       const confirmCopy = confirm(question);
       if (!confirmCopy) {
         return;

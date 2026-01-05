@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from "@typo3/core/lit-helper.js";
 import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
 import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
 import {openModal} from "@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs";
@@ -52,7 +53,7 @@ export class VeContentElement extends LitElement {
       .replace('__SYS_LANGUAGE_UID__', this.sys_language_uid)
       .replace('__UID_PID__', -this.uid);
 
-    openModal(newContentUrl, 'new Content', 'large', 'ajax');
+    openModal(newContentUrl, lll('frontend.addContentElement'), 'large', 'ajax');
   }
 
   constructor() {

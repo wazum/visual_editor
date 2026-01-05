@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" datatype="plaintext" original="EXT:visual_editor/Resources/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
+    <header/>
+    <body>
+      <trans-unit id="autosave">
+        <source>autosave</source>
+      </trans-unit>
+      <trans-unit id="autosave.disabled">
+        <source>to enable autosave, switch to a workspace</source>
+      </trans-unit>
+
+      <trans-unit id="editable.title">
+        <source>edit field %s</source>
+      </trans-unit>
+
+      <trans-unit id="save">
+        <source>Save</source>
+      </trans-unit>
+      <trans-unit id="save.change">
+        <source>Save 1 change</source>
+      </trans-unit>
+      <trans-unit id="save.changes">
+        <source>Save %d changes</source>
+      </trans-unit>
+      <trans-unit id="saving">
+        <source>Saving ...</source>
+      </trans-unit>
+
+      <trans-unit id="frontend.confirmCopy">
+        <source>copy the element?</source>
+      </trans-unit>
+      <trans-unit id="frontend.confirmCopy.saveAll">
+        <source>Save all changes, and copy the element?</source>
+      </trans-unit>
+      <trans-unit id="frontend.addContentElement">
+        <source>Create new Content</source>
+      </trans-unit>
+      <trans-unit id="frontend.resetChanges">
+        <source>reset changes</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

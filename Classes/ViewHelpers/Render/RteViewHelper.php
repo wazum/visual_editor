@@ -10,6 +10,7 @@ use TYPO3\CMS\Core\Configuration\Richtext;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -22,13 +23,14 @@ use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\RecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
+use function array_all;
 use function json_encode;
 use function sprintf;
 
 #[Autoconfigure(public: true)]
 final class RteViewHelper extends AbstractTagBasedViewHelper
 {
-    protected $tagName = 'editable-rte';
+    protected $tagName = 've-editable-rte';
 
     public function __construct(
         private readonly EditModeService $editModeService,
@@ -38,6 +40,7 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         private readonly Richtext $richtext,
         private readonly TcaSchemaFactory $tcaSchema,
         private readonly RteHtmlParser $rteHtmlParser,
+        private readonly LanguageServiceFactory $languageServiceFactory,
     )
     {
         parent::__construct();
@@ -93,7 +96,9 @@ final class RteViewHelper extends AbstractTagBasedViewHelper
         $this->tag->addAttribute('field', $field);
 
         $this->tag->addAttribute('name', $name);
-        $this->tag->addAttribute('title', 'Edit field ' . $name); // TODO label
+
+        $title = LocalizationUtility::translate('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title', arguments: [$name]);
+        $this->tag->addAttribute('title', $title);
         $this->tag->addAttribute('placeholder', $default);
         $this->tag->addAttribute('options', $options);
 

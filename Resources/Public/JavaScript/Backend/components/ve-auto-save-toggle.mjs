@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {onMessageDebounced, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
-import {autoSaveActive} from "@typo3/visual-editor/Shared/local-store.js";
+import {autoSaveActive} from "@typo3/visual-editor/Shared/stores.js";
 
 
 /**
@@ -60,7 +60,6 @@ export class VeAutoSaveToggle extends LitElement {
       <typo3-backend-icon identifier="${icon}" size="small"></typo3-backend-icon>
       ${(this.label)}`;
   }
-
 
   static styles = css`
     :host {

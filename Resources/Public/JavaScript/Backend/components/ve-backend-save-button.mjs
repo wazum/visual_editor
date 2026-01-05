@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from "@typo3/core/lit-helper.js";
 import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 
 /**
@@ -42,17 +43,16 @@ export class VeBackendSaveButton extends LitElement {
   }
 
   render() {
-    let s = 'Save';  // TODO label
+    let label = lll('save');
     if (this.count > 0) {
-      const label = this.count === 1 ? 'change' : 'changes';
-      s = html`Save ${this.count} ${label}`; // TODO label
+      label = this.count === 1 ? lll('save.change') : lll('save.changes', this.count);
     }
     if (this.saving) {
-      s = html`Saveing ...`; // TODO label
+      label = lll('saving');
     }
     return html`
       <typo3-backend-icon identifier="actions-save" size="small"></typo3-backend-icon>
-      ${s}
+      ${label}
     `;
   }
 

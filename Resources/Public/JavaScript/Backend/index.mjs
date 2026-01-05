@@ -59,6 +59,5 @@ onMessage('pageChanged', (pageId) => {
   newUrlTop.searchParams.set('id', pageId);
   window.top.history.pushState(null, '', newUrlTop);
 
-  // TODO for better usability we need to scroll to the newly selected page element
   ModuleStateStorage.update('web', pageId);
 });

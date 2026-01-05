@@ -10,7 +10,7 @@ import '@typo3/visual-editor/Frontend/components/ve-icon.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs';
 import {sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
 import {highlight, reset} from "@typo3/visual-editor/Frontend/spotlight-overlay.mjs";
-import { spotlightActive} from "@typo3/visual-editor/Shared/local-store.js";
+import { spotlightActive} from "@typo3/visual-editor/Shared/stores.js";
 
 if (window.location.hash === '#ve-close') {
   sendMessage('closeModal');

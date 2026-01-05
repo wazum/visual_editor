@@ -1,4 +1,5 @@
 import {css, html, LitElement} from 'lit';
+import {lll} from "@typo3/core/lit-helper.js";
 
 /**
  * @extends {HTMLElement}
@@ -29,7 +30,7 @@ export class VeColumn extends LitElement {
     const addButton = html`<div class="center">
       <ve-iframe-popup title="new Content" src="${newContentUrl}" type="ajax">
         <ve-icon name="actions-document-add" width="2em"></ve-icon>
-        Create new Content
+        ${lll('frontend.addContentElement')}
       </ve-iframe-popup>
     </div>`;
     return html`

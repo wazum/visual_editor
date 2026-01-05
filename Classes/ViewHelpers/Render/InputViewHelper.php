@@ -23,7 +23,7 @@ use function trim;
 #[Autoconfigure(public: true)]
 final class InputViewHelper extends AbstractTagBasedViewHelper
 {
-    protected $tagName = 'editable-input';
+    protected $tagName = 've-editable-input';
 
     public function __construct(
         private readonly EditModeService $editModeService,
