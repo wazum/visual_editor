@@ -31,6 +31,8 @@ final class DropAreaViewHelper extends AbstractViewHelper
 
     public function render(): mixed
     {
+        $this->editModeService->init();
+
         if (!$this->editModeService->isEditMode()) {
             return $this->renderChildren();
         }
