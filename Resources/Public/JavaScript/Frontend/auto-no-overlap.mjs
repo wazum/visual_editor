@@ -66,18 +66,30 @@ function calculate(list, group) {
     const htmlElement = orderedList[htmlElementIndex];
     const candidates = orderedList.slice(Number(htmlElementIndex) + 1, orderedList.length);
     const listOfConcealedElements = findConcealedElements(htmlElement, candidates);
-    // if (group === 've-drop-zone' && htmlElement.innerText === '18') {
+    // if (listOfConcealedElements.length >= 2) {
     //   debugger;
     // }
     for (const concealedElement of listOfConcealedElements) {
       const requiredPadding = concealedElement.getBoundingClientRect().top - htmlElement.getBoundingClientRect().top + concealedElement.getBoundingClientRect().height;
 
       const currentPadding = parseFloat(concealedElement.style.getPropertyValue('--auto-no-overlap-padding')) || 0;
-      if (requiredPadding <= 0) {
-        continue; // do not lower the padding again
+
+      if (group === 've-drop-zone') {
+        // if it is transform, we need to add the current padding as well
+        if (requiredPadding <= 0) {
+          continue; // do not lower the padding again
+        }
+        const newPadding = (currentPadding + requiredPadding) + 'px';
+        concealedElement.style.setProperty('--auto-no-overlap-padding', newPadding);
+      } else {
+        // if it is padding-bottom, we can just set it (if larger than current)
+        if (currentPadding >= requiredPadding) {
+          // already enough padding
+          continue;
+        }
+        concealedElement.style.setProperty('--auto-no-overlap-padding', requiredPadding + 'px');
+        // concealedElement.style.paddingBottom = requiredPadding + 'px';
       }
-      const newPadding = (currentPadding + requiredPadding) + 'px';
-      concealedElement.style.setProperty('--auto-no-overlap-padding', newPadding);
     }
   }
 }
