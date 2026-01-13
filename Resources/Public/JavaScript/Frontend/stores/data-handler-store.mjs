@@ -97,7 +97,6 @@ class DataHandlerStore extends EventTarget {
     if (JSON.stringify(oldDetail) === JSON.stringify(this.#oldDetail)) {
       return;
     }
-    console.log('DataHandlerStore updated:', detail);
     this.dispatchEvent(new CustomEvent('change', {detail}));
   }
 

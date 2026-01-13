@@ -217,18 +217,18 @@ export class VeDropZone extends LitElement {
     }
 
     // Text for debugging purposes only
-    // let text = '';
-    // if (this.target >= 0) {
-    //   text = 'insert first in column "' + this.colPos % 100 + '"';
-    // } else {
-    //   const name = this.getComponentName(this.target * -1);
-    //   text = 'insert after "' + name + '" ' + this.target * -1;
-    // }
-    // if (this.updateFields.tx_container_parent || this.colPos > 99) {
-    //   const uidOfParent = this.updateFields.tx_container_parent || parseInt(this.colPos / 100);
-    //   const nameOfParent = this.getComponentName(uidOfParent);
-    //   text += ' (in "' + nameOfParent + '" ' + uidOfParent + ')';
-    // }
+    let text = html``;
+    if (this.target < 0) {
+      const name = this.getComponentName(this.target * -1);
+      text = html`${text} <small>after</small> <b>${name}</b>`; // TODO label
+    }
+    if (this.updateFields.tx_container_parent || this.colPos > 99) {
+      // EXT:container + EXT:flux support
+      const uidOfParent = this.updateFields.tx_container_parent || parseInt(this.colPos / 100);
+      const nameOfParent = this.getComponentName(uidOfParent);
+      text = html`${text} <small>in</small> <b>${nameOfParent}</b>`; // TODO label
+    }
+    text = html`${text} <small>in column</small> <b>${this.colPos % 100}</b>`; // TODO label
 
     return html`
       <div class=${classMap(classes)}
@@ -237,7 +237,8 @@ export class VeDropZone extends LitElement {
            @dragleave="${this._dragLeave}"
            @drop="${this._drop}"
       >
-        <ve-icon name="apps-pagetree-drag-move-into" width="2em"/>
+        <ve-icon name="apps-pagetree-drag-move-into" width="2em"></ve-icon>
+        <span>${text}</span>
       </div>
     `;
   }
