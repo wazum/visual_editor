@@ -22,42 +22,61 @@ export class VeContentArea extends LitElement {
     observer.observe(this, {childList: true});
   }
 
+  firstUpdated(changedProperties) {
+    /** @type {HTMLElement} */
+    const element = this;
+    if(element.getAttribute('was')) {
+      // already processed
+      return;
+    }
+    const parent = element.parentElement;
+
+    element.setAttribute('was', parent.tagName.toLowerCase());
+    const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
+    for (const attributeName of parent.getAttributeNames()) {
+      if (!properties.includes(attributeName.toLowerCase())) {
+        element.setAttribute(attributeName, parent.getAttribute(attributeName));
+      }
+    }
+    // replace parent with this element
+    parent.replaceWith(element);
+  }
+
   render() {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
+      // TODO EXT:container support
       .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
       .replace('__UID_PID__', this.target);
 
     const columnHasChild = this.children.length > 0;
-    const addButton = html`<div class="center">
-      <ve-iframe-popup title="new Content" src="${newContentUrl}" type="ajax">
-        <ve-icon name="actions-document-add" width="2em"></ve-icon>
-        ${lll('frontend.addContentElement')}
-      </ve-iframe-popup>
-    </div>`;
+    const addButton = html`
+      <div class="center">
+        <ve-iframe-popup title="new Content" src="${newContentUrl}" type="ajax">
+          <ve-icon name="actions-document-add" width="2em"></ve-icon>
+          ${lll('frontend.addContentElement')}
+        </ve-iframe-popup>
+      </div>`;
     return html`
-      <div class="ve-content-area ${this.showElementOverlay ? 'showElementOverlay':''}">
-        ${(columnHasChild ? '' : addButton)}
-        <ve-drop-zone
-          table="tt_content"
-          target="${this.target}"
-          colPos="${this.colPos}"
-          updateFields="${JSON.stringify(this.updateFields)}"
-        ></ve-drop-zone>
-        <slot></slot>
+      ${(columnHasChild ? '' : addButton)}
+      <ve-drop-zone
+        table="tt_content"
+        target="${this.target}"
+        colPos="${this.colPos}"
+        updateFields="${JSON.stringify(this.updateFields)}"
+      ></ve-drop-zone>
+      <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
+      <div class="ve-content-area ${this.showElementOverlay ? 'showElementOverlay' : ''}">
       </div>
     `;
   }
 
   static styles = css`
     :host {
-    }
-    
-    .ve-content-area {
       position: relative;
     }
 
-    .ve-content-area.showElementOverlay:after {
+    .ve-content-area.showElementOverlay {
       content: '';
       position: absolute;
       top: 0;

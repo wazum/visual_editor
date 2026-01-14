@@ -39,6 +39,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         $this->editModeService->init();
 
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-area', $this->renderChildren());
+        $tag->forceClosingTag(true);
         $pageUid = $this->arguments['pageUid'] ?? $this->getPageInformation()->getId();
         $tag->addAttribute('target', $pageUid);
         $tag->addAttribute('colPos', (string)$this->arguments['colPos']);

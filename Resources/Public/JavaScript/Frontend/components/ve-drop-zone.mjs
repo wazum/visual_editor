@@ -47,7 +47,7 @@ export class VeDropZone extends LitElement {
     }
 
 
-    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this);
     if (!firstParent) {
       this.error = 'ERROR: Cannot find parent <ve-content-element> or <ve-content-area> for drop zone';
       throw new Error(message);
@@ -176,7 +176,7 @@ export class VeDropZone extends LitElement {
 
     this.isDragHovering = false; // reset
 
-    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this);
 
     if (!firstParent) {
       throw new Error('Cannot find parent ve-content-element or ve-content-area for drop zone');
@@ -211,7 +211,7 @@ export class VeDropZone extends LitElement {
       above: this.target >= 0,
     };
 
-    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this.parentElement);
+    const firstParent = findFirstParent(['ve-content-element', 've-content-area'], this);
     if (firstParent) {
       firstParent.showElementOverlay = this.isDragHovering;
     }
@@ -303,7 +303,7 @@ export class VeDropZone extends LitElement {
    * @param {HTMLElement} element
    * @returns {boolean}
    */
-  isAnyOfMyParents(table, uid, element = this.parentElement) {
+  isAnyOfMyParents(table, uid, element = this.parentElement || this.parentNode.host) {
     if (element instanceof VeDropZone) {
       if (element.table === table && element.uid === uid) {
         return true;

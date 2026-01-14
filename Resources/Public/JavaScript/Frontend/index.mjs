@@ -1,5 +1,5 @@
 import '@typo3/visual-editor/Frontend/components/ve-reset-button.mjs';
-import '@typo3/visual-editor/Frontend/components/ve-editable-input.mjs';
+import '@typo3/visual-editor/Frontend/components/ve-editable-text.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-editable-rich-text.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-content-element.mjs';
 import '@typo3/visual-editor/Frontend/components/ve-content-area.mjs';
@@ -25,7 +25,7 @@ document.body.appendChild(element);
 (function spotlight() {
   const setSpotlight = () => {
     if (spotlightActive.get()) {
-      highlight('ve-editable-input, ve-editable-rich-text');
+      highlight('ve-editable-text, ve-editable-rich-text');
     } else {
       reset();
     }

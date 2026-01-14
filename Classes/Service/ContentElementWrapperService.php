@@ -87,7 +87,7 @@ final readonly class ContentElementWrapperService
         ];
         if ($record->has('tx_container_parent')) {
             // EXT:container compatibility
-            $updateFields['tx_container_parent'] = $record->get('tx_container_parent');
+            $updateFields['tx_container_parent'] = $record->getRawRecord()->get('tx_container_parent');
         }
         $div->addAttribute('updateFields', json_encode($updateFields, JSON_THROW_ON_ERROR));
         $div->setContent($content);

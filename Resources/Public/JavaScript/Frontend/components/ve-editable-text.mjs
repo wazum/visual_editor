@@ -6,7 +6,7 @@ import {showEmptyActive} from "@typo3/visual-editor/Shared/stores.js";
 /**
  * @extends {HTMLElement}
  */
-export class VeEditableInput extends LitElement {
+export class VeEditableText extends LitElement {
   static properties = {
     changed: {type: Boolean, reflect: true,},
     value: {type: String, reflect: true,},
@@ -218,4 +218,4 @@ export class VeEditableInput extends LitElement {
   `;
 }
 
-customElements.define('ve-editable-input', VeEditableInput);
+customElements.define('ve-editable-text', VeEditableText);

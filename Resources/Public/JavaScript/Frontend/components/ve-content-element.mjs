@@ -10,6 +10,7 @@ import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handle
  */
 export class VeContentElement extends LitElement {
   static properties = {
+    id: {type: String},
     elementName: {type: String},
     editUrl: {type: String},
     table: {type: String},
@@ -88,63 +89,88 @@ export class VeContentElement extends LitElement {
     if (this.hiddenFieldName) {
       dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, this.isHidden);
     }
+
+    /** @type {HTMLElement} */
+    const element = this;
+    if(element.getAttribute('was')) {
+      // already processed
+      return;
+    }
+    if (element.childElementCount !== 1) {
+      console.log('ve-content-element: Expected exactly one child element, found ' + element.childElementCount);
+      return;
+    }
+    const child = element.firstElementChild;
+    element.setAttribute('was', child.tagName.toLowerCase());
+    const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
+    for (const attributeName of child.getAttributeNames()) {
+      if (!properties.includes(attributeName.toLowerCase())) {
+        element.setAttribute(attributeName, child.getAttribute(attributeName));
+      }
+    }
+    // put all children of child into element and remove child
+    while (child.firstChild) {
+      element.appendChild(child.firstChild);
+    }
+    child.remove();
   }
 
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
+    if (this.isHidden) {
+      this.classList.add('ve-hidden');
+    } else {
+      this.classList.remove('ve-hidden');
+    }
     return html`
-      <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}">
-        ${
+      <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
+      ${
 
-          this.canModifyRecord ?
-            html`
-              <ve-drag-handle
-                table="${this.table}" uid="${this.uid}"
-                class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"
-              >
-                <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
-                <!-- TODO extract button bar as separate component -->
-                <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
-                  <ve-icon name="actions-open"/>
-                </a>
-                ${
-                  this.hiddenFieldName ?
-                    html`
-                      <a class="button" @click="${this._toggleHidden}">
-                        <ve-icon name="${toggleIcon}"/>
-                      </a>
-                    ` : ''
-                }
-                <a class="button" @click="${this._delete}">
-                  <ve-icon name="actions-delete"/>
-                </a>
-                <a class="button" @click="${this._addAbove}">
-                  <ve-icon name="actions-document-add"/>
-                </a>
-              </ve-drag-handle>` : ''
-        }
-        <slot></slot>
-        <ve-drop-zone
-          table="${this.table}"
-          uid="${this.uid}"
-          target="${-this.uid}"
-          colPos="${this.colPos}"
-          updateFields="${JSON.stringify(this.updateFields)}"
-        ></ve-drop-zone>
-      </div>
+        this.canModifyRecord ?
+          html`
+            <ve-drag-handle
+              table="${this.table}" uid="${this.uid}"
+              class="button-bar ${this.dragInProgress ? 'dragAndDropActive' : ''}"
+            >
+              <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
+              <!-- TODO extract button bar as separate component -->
+              <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
+                <ve-icon name="actions-open"/>
+              </a>
+              ${
+                this.hiddenFieldName ?
+                  html`
+                    <a class="button" @click="${this._toggleHidden}">
+                      <ve-icon name="${toggleIcon}"/>
+                    </a>
+                  ` : ''
+              }
+              <a class="button" @click="${this._delete}">
+                <ve-icon name="actions-delete"/>
+              </a>
+              <a class="button" @click="${this._addAbove}">
+                <ve-icon name="actions-document-add"/>
+              </a>
+            </ve-drag-handle>` : ''
+      }
+      <ve-drop-zone
+        table="${this.table}"
+        uid="${this.uid}"
+        target="${-this.uid}"
+        colPos="${this.colPos}"
+        updateFields="${JSON.stringify(this.updateFields)}"
+      ></ve-drop-zone>
+      <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}"></div>
     `;
   }
 
   static styles = css`
     :host {
       display: block;
-    }
-
-    .border {
       position: relative;
     }
 
-    .border:after {
+    .border {
       content: '';
       position: absolute;
       top: 0;
@@ -154,27 +180,22 @@ export class VeContentElement extends LitElement {
       pointer-events: none;
     }
 
-    .border.showElementOverlay:after {
+    .border.showElementOverlay {
       background-image: linear-gradient(to top, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
     }
 
-    .border:hover:after {
+    *:hover ~ .border {
       outline: 1px solid #d1d1d1;
       outline-offset: 0px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
     }
 
+    :host(.ve-hidden) {
+      opacity: 0.5;
+    }
+
     .border.hidden {
-      opacity: 0.5;
-    }
-
-    .border.hidden:after {
       background: rgba(0, 0, 0, 0.5);
-    }
-
-    *:hover > .button-bar {
-      /* TODO this dose not work, should be visible if the body is hovered */
-      opacity: 0.5;
     }
 
     .button-bar {
@@ -196,7 +217,7 @@ export class VeContentElement extends LitElement {
       z-index: 10100;
     }
 
-    .border:hover .button-bar {
+    *:hover ~ .button-bar, .button-bar:hover {
       opacity: 1;
     }
 
@@ -222,43 +243,6 @@ export class VeContentElement extends LitElement {
     .button:hover {
       border: 1px solid #888;
       background-color: #666;
-    }
-
-    .dropArea {
-      display: none;
-      position: absolute;
-      height: 20px;
-
-      left: 0;
-      right: 0;
-      /*backdrop-filter: invert(100%);*/
-      background-color: #222;
-      outline: 1px dashed #666;
-      border-radius: 0.2em;
-      color: #eee;
-
-      /* text centered*/
-      align-items: center;
-      justify-content: center;
-
-      z-index: 10000;
-
-      &.active {
-        display: flex;
-      }
-
-      &.over {
-        background-color: #3b9e3b;
-        outline: 2px solid #aaa;
-      }
-
-      &.above {
-        top: -22px;
-      }
-
-      &.below {
-        bottom: -22px;
-      }
     }
   `;
 }
