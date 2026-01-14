@@ -17,7 +17,7 @@ export class VeDropZone extends LitElement {
 
     target: {type: Number},
     colPos: {type: Number},
-    updateFields: {type: Number},
+    updateFields: {type: Object},
 
     show: {type: Boolean, state: true, attribute: false},
     isDragHovering: {type: Boolean, state: true, attribute: false},
@@ -222,9 +222,9 @@ export class VeDropZone extends LitElement {
       const name = this.getComponentName(this.target * -1);
       text = html`${text} <small>after</small> <b>${name}</b>`; // TODO label
     }
-    if (this.updateFields.tx_container_parent || this.colPos > 99) {
+    if (this.updateFields?.tx_container_parent || this.colPos > 99) {
       // EXT:container + EXT:flux support
-      const uidOfParent = this.updateFields.tx_container_parent || parseInt(this.colPos / 100);
+      const uidOfParent = this.updateFields?.tx_container_parent || parseInt(this.colPos / 100);
       const nameOfParent = this.getComponentName(uidOfParent);
       text = html`${text} <small>in</small> <b>${nameOfParent}</b>`; // TODO label
     }

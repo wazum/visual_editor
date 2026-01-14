@@ -42,7 +42,7 @@ export class VeContentArea extends LitElement {
           table="tt_content"
           target="${this.target}"
           colPos="${this.colPos}"
-          updateFields="${this.updateFields}"
+          updateFields="${JSON.stringify(this.updateFields)}"
         ></ve-drop-zone>
         <slot></slot>
       </div>

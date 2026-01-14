@@ -129,7 +129,7 @@ export class VeContentElement extends LitElement {
           uid="${this.uid}"
           target="${-this.uid}"
           colPos="${this.colPos}"
-          updateFields="${this.updateFields}"
+          updateFields="${JSON.stringify(this.updateFields)}"
         ></ve-drop-zone>
       </div>
     `;
