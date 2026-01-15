@@ -5,20 +5,20 @@ Next Generation Frontend Editing for TYPO3 CMS.
 This extension provides visual editing features for content elements in TYPO3 CMS.
 
 ## Features
-- Inline editing It looks perfectly like the frontend output (WYSIWYG)
-- Drag-and-drop repositioning of content elements (adding and deleting elements)
-- Real-time preview of changes without page reloads
-- User-friendly interface for non-technical editors
+- ✍️ Inline editing it looks perfectly like the frontend output (WYSIWYG)
+- 🧲 Drag-and-drop repositioning of content elements (➕ adding and 🗑️ deleting elements)
+- ⚡ Real-time preview of changes without page reloads
+- 😊 User-friendly interface for non-technical editors
 
 TODO put gifs here
 
 ## Installation
 
-1. `composer require friendsoftypo3/visual-editor` (or install via Extension Manager)
-2. add the SiteSet to your site configuration
-3. Add `f:render.text`, `f:render.richText`, `f:contentArea` to your templates (see below)
-4. Clear caches
-5. Start editing!
+1. 📦 `composer require friendsoftypo3/visual-editor` (or install via 🧩 Extension Manager)
+2. ⚙️ add the SiteSet to your site configuration
+3. 🧱 Add `f:render.text`, `f:render.richText`, `f:contentArea` to your templates (see below)
+4. 🧹 Clear caches
+5. 🚀 Start editing!
 
 ## Where to add the ViewHelpers
 
@@ -98,8 +98,6 @@ search for:
     <flux:content.render area="column0"/>
   </f:contentArea>
   ````
-- TODO example for EXT:gridelements
-- TODO example for EXT:mask
 
 ## License and Authors: License type, contributors, contact information
 
