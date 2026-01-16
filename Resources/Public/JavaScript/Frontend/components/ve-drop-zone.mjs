@@ -246,6 +246,9 @@ export class VeDropZone extends LitElement {
   static styles = css`
     :host {
       display: block;
+      /* do not interfere with the grid of the parent */
+      grid-column: 1 / -1;
+      grid-row: 1 / -1;
     }
 
     .add-button {

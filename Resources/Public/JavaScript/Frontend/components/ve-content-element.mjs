@@ -96,10 +96,22 @@ export class VeContentElement extends LitElement {
       // already processed
       return;
     }
+
     if (element.childElementCount !== 1) {
-      console.log('ve-content-element: Expected exactly one child element, found ' + element.childElementCount);
+      console.warn('ve-content-element: Expected exactly one child element, found ' + element.childElementCount);
       return;
     }
+    const notAllowedChildTags = ['style', 'script', 'iframe', 've-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
+    if (notAllowedChildTags.includes(element.firstElementChild.tagName.toLowerCase())) {
+      console.warn('ve-content-element: Child element cannot be <' + element.firstElementChild.tagName.toLowerCase() + '> please wrap it in a div or similar.');
+      // set this.style.display = 'none'; if first child is also not visible
+      const isChildVisible = !!(element.firstElementChild.offsetWidth || element.firstElementChild.offsetHeight || element.firstElementChild.getClientRects().length);
+      if (!isChildVisible) {
+        element.style.display = 'none';
+      }
+      return;
+    }
+
     const child = element.firstElementChild;
     element.setAttribute('was', child.tagName.toLowerCase());
     const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
@@ -123,7 +135,6 @@ export class VeContentElement extends LitElement {
       this.classList.remove('ve-hidden');
     }
     return html`
-      <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
       ${
 
         this.canModifyRecord ?
@@ -153,6 +164,7 @@ export class VeContentElement extends LitElement {
               </a>
             </ve-drag-handle>` : ''
       }
+      <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
       <ve-drop-zone
         table="${this.table}"
         uid="${this.uid}"
@@ -184,7 +196,9 @@ export class VeContentElement extends LitElement {
       background-image: linear-gradient(to top, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
     }
 
-    *:hover ~ .border {
+    *:hover ~ .border,
+    .border:hover,
+    .border:has(~ *:hover) {
       outline: 1px solid #d1d1d1;
       outline-offset: 0px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
@@ -217,7 +231,9 @@ export class VeContentElement extends LitElement {
       z-index: 10100;
     }
 
-    *:hover ~ .button-bar, .button-bar:hover {
+    *:hover ~ .button-bar, 
+    .button-bar:hover,
+    .button-bar:has(~ *:hover) {
       opacity: 1;
     }
 
@@ -238,6 +254,7 @@ export class VeContentElement extends LitElement {
       padding: 0.2em 0.5em;
       text-decoration: none;
       cursor: pointer;
+      height: 1.3rem;
     }
 
     .button:hover {

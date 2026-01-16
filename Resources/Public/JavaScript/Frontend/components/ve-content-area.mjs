@@ -31,6 +31,16 @@ export class VeContentArea extends LitElement {
     }
     const parent = element.parentElement;
 
+    if(parent.childElementCount !== 1) {
+      console.warn('ve-content-area should be the only child of its parent element to avoid layout issues.');
+      return;
+    }
+    const notAllowedChildTags = ['style', 'script', 'iframe', 've-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
+    if (notAllowedChildTags.includes(parent.tagName.toLowerCase())) {
+      console.warn('ve-content-element: Child element cannot be <' + parent.tagName.toLowerCase() + '> please wrap it in a div or similar.');
+      return;
+    }
+
     element.setAttribute('was', parent.tagName.toLowerCase());
     const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
     for (const attributeName of parent.getAttributeNames()) {
@@ -77,7 +87,12 @@ export class VeContentArea extends LitElement {
       position: relative;
     }
 
+    .ve-content-area {
+      display: none;
+    }
+
     .ve-content-area.showElementOverlay {
+      display: block;
       content: '';
       position: absolute;
       top: 0;

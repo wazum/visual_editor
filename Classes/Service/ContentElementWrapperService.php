@@ -7,15 +7,18 @@ namespace TYPO3\CMS\VisualEditor\Service;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\VisualEditor\ViewHelpers\ContentAreaViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function assert;
 use function json_encode;
+use function str_starts_with;
 use const JSON_THROW_ON_ERROR;
 
 #[Autoconfigure(public: true)]
@@ -100,7 +103,7 @@ final readonly class ContentElementWrapperService
         $recordType = $record->getRecordType();
         foreach ($GLOBALS['TCA']['tt_content']['columns']['CType']['config']['items'] as $item) {
             if ($item['value'] === $recordType) {
-                return LocalizationUtility::translate($item['label']);
+                return str_starts_with($item['label'], 'LLL:') ? LocalizationUtility::translate($item['label']) : $item['label'];
             }
         }
         return $recordType;
