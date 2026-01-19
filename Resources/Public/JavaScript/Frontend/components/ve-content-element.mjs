@@ -195,6 +195,10 @@ export class VeContentElement extends LitElement {
       transition: 0.2s, box-shadow 0.2s, background-image 0.2s;
     }
 
+    .border.hidden {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
     .border.showElementOverlay {
       background-image: linear-gradient(to top, rgba(59, 158, 59, 0.90) 0%, transparent min(500px, max(100px, 50%)));
     }
@@ -205,10 +209,6 @@ export class VeContentElement extends LitElement {
       outline: 1px solid #d1d1d1;
       outline-offset: 0px;
       box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
-    }
-
-    .border.hidden {
-      background: rgba(0, 0, 0, 0.5);
     }
 
     .button-bar {
