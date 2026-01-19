@@ -63,6 +63,7 @@ final readonly class EditModeService
                 'sys_language_uid' => '__SYS_LANGUAGE_UID__',
                 'colPos' => '__COL_POS__',
                 'uid_pid' => '__UID_PID__',
+                'tx_container_parent' => '__TX_CONTAINER_PARENT__',
                 'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                     'id' => $pageId,
                 ]),

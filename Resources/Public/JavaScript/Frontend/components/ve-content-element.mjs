@@ -62,7 +62,8 @@ export class VeContentElement extends LitElement {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
       .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
-      .replace('__UID_PID__', -this.uid);
+      .replace('__UID_PID__', -this.uid)
+      .replace('__TX_CONTAINER_PARENT__', this.updateFields.tx_container_parent || 0);
 
     openModal(newContentUrl, lll('frontend.addContentElement'), 'large', 'ajax');
   }

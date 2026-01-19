@@ -67,9 +67,9 @@ export class VeContentArea extends LitElement {
   render() {
     const newContentUrl = window.veInfo.newContentUrl
       .replace('__COL_POS__', this.colPos)
-      // TODO EXT:container support
       .replace('__SYS_LANGUAGE_UID__', this.updateFields.sys_language_uid)
-      .replace('__UID_PID__', this.target);
+      .replace('__UID_PID__', this.target)
+      .replace('__TX_CONTAINER_PARENT__', this.updateFields.tx_container_parent || 0);
 
     const columnHasChild = this.children.length > 0;
     const addButton = html`
