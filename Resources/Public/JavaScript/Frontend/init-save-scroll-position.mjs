@@ -4,7 +4,7 @@ import {sortTheNodesThroughTheShadowRootsAndSlots} from "@typo3/visual-editor/Fr
  * @return {void}
  */
 export function initSaveScrollPosition() {
-  if (!getPosition()) {
+  if (!getPositions()) {
     // no position to restore
 
     document.addEventListener('scrollend', saveScrollPosition);
@@ -30,14 +30,12 @@ export function initSaveScrollPosition() {
 }
 
 /**
- * @param id {string}
- * @param innerOffsetY {number}
+ * @param positions {Array<{id: string, innerOffsetY: number}>}
  * @return {void}
  */
-function setPosition(id, innerOffsetY) {
+function setPositions(positions) {
   const item = {
-    id: id,
-    innerOffsetY: innerOffsetY,
+    positions,
     url: window.location.href,
     time: Date.now().toFixed(),
   };
@@ -46,34 +44,39 @@ function setPosition(id, innerOffsetY) {
 }
 
 /**
- * @return {{id: string, innerOffsetY: number}|null}
+ * @return {Array<{id: string, innerOffsetY: number}>}
  */
-function getPosition() {
+function getPositions() {
   const item = JSON.parse(sessionStorage.getItem('t3-ve-scroll-position') || '{}');
-  if (!item || !item.id || !item.url || item.url !== window.location.href) {
+  if (!item || !item.url || item.url !== window.location.href) {
     return null;
   }
   // only if it was saved in the last 1h:
   if (Date.now() - parseInt(item.time, 10) > 3600 * 1000) {
     return null;
   }
-  return {
-    id: item.id,
-    innerOffsetY: item.innerOffsetY,
-  };
+  return Array.isArray(item.positions) ? item.positions : null;
 }
 
 /**
  * @return {void}
  */
 function scrollToPosition() {
-  const position = getPosition();
-  if (!position) {
+  const positions = getPositions();
+  if (!positions) {
     return;
   }
 
-  const element = document.getElementById(position.id);
-  if (!element) {
+  let element = null;
+  let position = null;
+  for (const pos of positions) {
+    element = document.getElementById(pos.id);
+    if (element) {
+      position = pos;
+      break;
+    }
+  }
+  if (!element || !position) {
     return;
   }
 
@@ -95,13 +98,19 @@ function saveScrollPosition() {
   // We need to order the elements from bottom to top
   const list = sortTheNodesThroughTheShadowRootsAndSlots([...possibleSaveTargets]);
 
+  const positions = [];
   // so we iterate in reverse order:
   for (const element of list.toReversed()) {
     const elementRect = element.getBoundingClientRect();
-    if (elementRect.top < 0 && elementRect.bottom > 0) {
-      const innerOffsetY = Math.min(-elementRect.top, elementRect.height);
-      setPosition(element.id, innerOffsetY);
-      return;
+    if (elementRect.top < 0) {
+      const innerOffsetY = Math.min(window.innerHeight, -elementRect.top);
+      positions.push({
+        id: element.id,
+        innerOffsetY: innerOffsetY,
+      });
     }
   }
+  // take only first 10 positions:
+  positions.splice(10);
+  setPositions(positions);
 }
