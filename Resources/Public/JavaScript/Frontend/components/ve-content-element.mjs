@@ -191,6 +191,7 @@ export class VeContentElement extends LitElement {
       left: 0;
       bottom: 0;
       right: 0;
+      z-index: 10;
       pointer-events: none;
 
       transition: 0.2s, box-shadow 0.2s, background-image 0.2s;
@@ -208,8 +209,8 @@ export class VeContentElement extends LitElement {
     .border:hover,
     .border:has(~ *:hover) {
       outline: 1px solid #d1d1d1;
-      outline-offset: 0px;
-      box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset;
+      outline-offset: 0;
+      box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.5) inset, 0 0 40px 0 rgba(255, 255, 255, 0.5) inset;
     }
 
     .button-bar {

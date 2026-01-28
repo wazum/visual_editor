@@ -84,7 +84,7 @@ function scrollToPosition() {
   const scrollToY = elementRect.top + position.innerOffsetY;
   window.scrollTo({
     top: scrollToY,
-    behavior: 'auto',
+    behavior: 'instant',
   });
 }
 

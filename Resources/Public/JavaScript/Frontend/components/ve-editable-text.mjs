@@ -95,13 +95,12 @@ export class VeEditableText extends LitElement {
           <ve-reset-button @click="${this.onReset}"></ve-reset-button>
         </div>`;
     }
-    const parentIsInline = getComputedStyle(this.parentElement).display.startsWith('inline');
-    /** @type {HTMLElement} */
-    const e = this;
-    this.classList.toggle('block', !parentIsInline);
+    const shouldBeInline = this.shouldBeInline();
+
+    this.classList.toggle('block', !shouldBeInline);
     return html`
       <span
-        class=${classMap({slot: true, synced: this.isSynced, changed: this.changed, block: !parentIsInline})}
+        class=${classMap({slot: true, synced: this.isSynced, changed: this.changed, block: !shouldBeInline})}
         style="--button-count: ${buttonCount};"
         contenteditable="${this.isSynced ? 'false' : 'plaintext-only'}"
         role="textbox"
@@ -122,6 +121,25 @@ export class VeEditableText extends LitElement {
       ></span>
       ${buttons}
     `;
+  }
+
+  shouldBeInline() {
+    const parentIsInline = getComputedStyle(this.parentElement).display.startsWith('inline');
+    if (parentIsInline) {
+      return true;
+    }
+
+    let childNodes = [...this.parentElement.childNodes].filter((node) => {
+      // if text not and not just whitespace
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent.trim().length > 0;
+      }
+
+      return true;
+    });
+
+    // if there are other child nodes, we should be inline
+    return childNodes.length > 1;
   }
 
   static styles = css`
