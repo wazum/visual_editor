@@ -11,9 +11,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
+use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Aspect\PreviewAspect;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
 use function array_keys;
@@ -31,10 +34,11 @@ class PersistenceMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (!$this->shouldSaveStuff($request)) {
-            return $handler->handle($request);
-        }
-        return $this->saveStuff($request);
+        return match ($this->whatToDo($request)) {
+            MiddlewareAction::Edit => $this->handleEdit($request, $handler),
+            MiddlewareAction::Save => $this->saveStuff($request),
+            MiddlewareAction::None => $handler->handle($request),
+        };
     }
 
     private function saveStuff(ServerRequestInterface $request): ResponseInterface
@@ -55,12 +59,12 @@ class PersistenceMiddleware implements MiddlewareInterface
         return new JsonResponse(['success' => true]);
     }
 
-    private function shouldSaveStuff(ServerRequestInterface $request)
+    private function whatToDo(ServerRequestInterface $request): MiddlewareAction
     {
         // parameter editMode must be set
         $params = $request->getQueryParams();
         if (!isset($params['editMode'])) {
-            return false;
+            return MiddlewareAction::None;
         }
 
         // backend user required
@@ -75,7 +79,7 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         // only do something on POST requests
         if ($request->getMethod() !== 'POST') {
-            return false;
+            return MiddlewareAction::Edit;
         }
 
         // only allow application/json content type
@@ -84,7 +88,7 @@ class PersistenceMiddleware implements MiddlewareInterface
         }
 
         if ($user->isAdmin()) {
-            return true;
+            return MiddlewareAction::Save;
         }
 
         $beUser = $GLOBALS['BE_USER'] ?? null;
@@ -103,7 +107,7 @@ class PersistenceMiddleware implements MiddlewareInterface
             throw new UnauthorizedException('No permission to edit content on this page');
         }
 
-        return true;
+        return MiddlewareAction::Save;
     }
 
     private function getPageInformation(ServerRequestInterface $request): PageInformation
@@ -113,5 +117,19 @@ class PersistenceMiddleware implements MiddlewareInterface
             throw new \RuntimeException('No frontend page information available');
         }
         return $frontendPageInformation;
+    }
+
+    private function handleEdit(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $this->context->setAspect(
+            'visibility',
+            new VisibilityAspect(
+                includeHiddenPages: false,
+                includeHiddenContent: true,
+                includeDeletedRecords: false,
+                includeScheduledRecords: false,
+            ),
+        );
+        return $handler->handle($request);
     }
 }
