@@ -45,7 +45,7 @@ function ensureStyle() {
   opacity: 1;
 }
 
-.spotlight-overlay-path {
+.spotlight-overlay-svg--active .spotlight-overlay-path {
   pointer-events: auto; /* dark area blocks interactions */
 }
 `;
