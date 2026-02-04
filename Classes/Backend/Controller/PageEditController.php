@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\WorkspaceRestriction;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\Record\VersionInfo;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
@@ -50,6 +51,7 @@ use function array_key_first;
 use function assert;
 use function count;
 use function is_array;
+use function sprintf;
 
 
 #[AsController]
@@ -74,6 +76,7 @@ class PageEditController
         protected readonly TcaSchemaFactory $tcaSchemaFactory,
         protected readonly PackageManager $packageManager,
         protected readonly PolicyRegistry $policyRegistry,
+        protected readonly Typo3Version $typo3Version,
     ) {
     }
 
@@ -90,6 +93,9 @@ class PageEditController
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $pageInfo);
         if (!$record instanceof Record) {
             throw new InvalidArgumentException('RecordFactory did not return a Record for pages record, this should not happen');
+        }
+        if ($record->getRecordType() === '254') {
+            throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor');
         }
         $this->pageRecord = $record;
 
@@ -118,6 +124,10 @@ class PageEditController
                 'pageId' => $request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0,
                 'siteName' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] ?? '',
             ]);
+
+            if ($this->typo3Version->getMajorVersion() >= 14) {
+                $view->getDocHeaderComponent()->disableAutomaticReloadButton();
+            }
             return $view->renderResponse('PageLayout/PageModuleNoAccess');
         }
 
@@ -125,9 +135,11 @@ class PageEditController
             JavaScriptModuleInstruction::create('@typo3/visual-editor/Backend/index.mjs'),
         );
 
-
         $view = $this->moduleTemplateFactory->create($request);
+
         $view->setTitle('Edit Page · ' . $this->pageRecord->get('title'));
+        $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
+
         $iframeUrl = $this->iframeUrl();
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
@@ -196,6 +208,11 @@ class PageEditController
             $buttonBar->addButton($button, buttonGroup: 3);
         }
 
+        // Clear Cache
+        if ($button = $this->makeClearCacheButton($buttonBar, $request)) {
+            $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, buttonGroup: 1);
+        }
+
         /*
          * TODO add Preview Settings button
          * Preview Settings: (saved in user preferences)
@@ -209,8 +226,22 @@ class PageEditController
          */
 
         // Reload
-        $is13orLower = (new Typo3Version())->getMajorVersion() <= 13;
-        if ($is13orLower) {
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            // Shortcut
+            $view->getDocHeaderComponent()->setShortcutContext(
+                routeIdentifier: 'web_edit',
+                displayName: sprintf(
+                    '%s: %s [%d]',
+                    $this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:edit_page'),
+                    $this->pageRecord->get('title'),
+                    $this->pageRecord->getUid(),
+                ),
+                arguments: [
+                    'id' => $this->pageRecord->getUid(),
+//                    'languages' => $this->pageContext->selectedLanguageIds,
+                ]
+            );
+        } else {
             $reloadButton = $buttonBar->makeLinkButton()
                 ->setHref($request->getAttribute('normalizedParams')->getRequestUri())
                 ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
@@ -337,6 +368,18 @@ class PageEditController
             ->setHref((string)$this->uriBuilder->buildUriFromRoute('record_edit', $params))
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
+    }
+
+    protected function makeClearCacheButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
+    {
+        $clearCacheButton = $buttonBar->makeLinkButton()
+            ->setHref('#')
+            ->setDataAttributes(['id' => $this->pageRecord->getUid()])
+            ->setClasses('t3js-clear-page-cache')
+            ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.clear_cache'))
+            ->setIcon($this->iconFactory->getIcon('actions-system-cache-clear', IconSize::SMALL));
+
+        return $clearCacheButton;
     }
 
     /**

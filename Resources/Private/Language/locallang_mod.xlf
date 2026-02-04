@@ -12,6 +12,9 @@
       <trans-unit id="mlang_tabs_tab">
         <source>Editor</source>
       </trans-unit>
+      <trans-unit id="edit_page">
+        <source>Edit page</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>
