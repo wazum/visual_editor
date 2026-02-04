@@ -25,6 +25,8 @@ use TYPO3\CMS\Core\Domain\RecordInterface;
  * Event to modify the rendered content area output.
  * This can be used to alter the final HTML of a content area,
  * for example to render a debug wrapper around it.
+ *
+ * TODO make this work again!
  */
 final class RenderContentAreaEvent
 {

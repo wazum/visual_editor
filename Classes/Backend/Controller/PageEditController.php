@@ -88,7 +88,7 @@ class PageEditController
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
-            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0),);
+            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0));
         }
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $pageInfo);
         if (!$record instanceof Record) {
