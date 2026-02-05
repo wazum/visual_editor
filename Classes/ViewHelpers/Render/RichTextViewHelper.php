@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
-use InvalidArgumentException;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
@@ -24,9 +22,7 @@ use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use function json_encode;
-use function sprintf;
 
-#[Autoconfigure(public: true)]
 final class RichTextViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;

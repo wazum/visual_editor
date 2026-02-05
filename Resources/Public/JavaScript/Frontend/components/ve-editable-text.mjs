@@ -17,7 +17,7 @@ export class VeEditableText extends LitElement {
     field: {type: String,},
     valueInitial: {type: String,},
     placeholder: {type: String,},
-    allowNewLines: {type: Boolean,},
+    allowNewlines: {type: Boolean,},
     showEmpty: {type: Boolean,},
   };
 
@@ -114,7 +114,7 @@ export class VeEditableText extends LitElement {
         }}"
         @blur="${() => this.shadowRoot.querySelector('.slot').innerText = this.value}"
         @keypress="${(event) => {
-          if (event.which === 13 && !this.allowNewLines) {
+          if (event.which === 13 && !this.allowNewlines) {
             event.preventDefault();
           }
         }}"
