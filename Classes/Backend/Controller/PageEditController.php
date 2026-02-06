@@ -331,7 +331,7 @@ final class PageEditController
     /**
      * Edit Button
      */
-    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
+    private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ButtonInterface
     {
         $pageUid = $this->pageRecord->getUid();
         if ($this->selectedLanguage->getLanguageId() > 0) {
@@ -354,7 +354,7 @@ final class PageEditController
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
     }
 
-    private function makeClearCacheButton(ButtonBar $buttonBar): ?ButtonInterface
+    private function makeClearCacheButton(ButtonBar $buttonBar): ButtonInterface
     {
         return $buttonBar->makeLinkButton()
             ->setHref('#')
@@ -402,7 +402,7 @@ final class PageEditController
         return $GLOBALS['BE_USER'];
     }
 
-    private function makeAutoSaveButton(ButtonBar $buttonBar)
+    private function makeAutoSaveButton(ButtonBar $buttonBar): ?GenericButton
     {
         if (
             $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
@@ -435,7 +435,7 @@ final class PageEditController
     }
 
 
-    private function makeSaveButton(ButtonBar $buttonBar)
+    private function makeSaveButton(ButtonBar $buttonBar): ?GenericButton
     {
         if (
             $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
