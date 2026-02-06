@@ -34,23 +34,32 @@ final class TextViewHelper extends AbstractViewHelper
     {
         parent::initializeArguments();
 
-        $this->registerArgument('record', RecordInterface::class . '|' . PageInformation::class, 'A Record API Object (field is also needed)', true);
+        $this->registerArgument('record', RecordInterface::class . '|' . PageInformation::class, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', true);
 
         $this->registerArgument('allowNewlines', 'bool', 'allows newLines and converts them to <br>', false, false);
+    }
+
+    public function getContentArgumentName(): string
+    {
+        return 'record';
     }
 
     public function render(): Input
     {
         $this->editModeService->init();
 
-        $record = $this->arguments['record'];
+        $record = $this->renderChildren();
         $field = $this->arguments['field'];
 
         $allowNewlines = $this->arguments['allowNewlines'];
 
         if ($record instanceof PageInformation) {
             $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
+        }
+
+        if (!$record instanceof RecordInterface) {
+            throw new \InvalidArgumentException('The argument "record" must be an instance of RecordInterface or PageInformation. Given: ' . get_debug_type($record),);
         }
 
         $name = LocalizationUtility::translate($this->tcaSchema->get($record->getMainType())->getField($field)->getLabel());

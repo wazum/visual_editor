@@ -21,7 +21,6 @@ use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
-
 use function json_encode;
 
 final class RichTextViewHelper extends AbstractViewHelper
@@ -36,7 +35,8 @@ final class RichTextViewHelper extends AbstractViewHelper
         private readonly RichtextConfiguration $richtext,
         private readonly TcaSchemaFactory $tcaSchema,
         private readonly RteHtmlParser $rteHtmlParser,
-    ) {
+    )
+    {
     }
 
     public function initializeArguments(): void
@@ -48,15 +48,24 @@ final class RichTextViewHelper extends AbstractViewHelper
         $this->registerArgument('htmlArguments', 'array', '@see f:format.html arguments', false, []);
     }
 
+    public function getContentArgumentName(): string
+    {
+        return 'record';
+    }
+
     public function render(): RichText
     {
         $this->editModeService->init();
 
-        $record = $this->arguments['record'];
+        $record = $this->renderChildren();
         $field = $this->arguments['field'];
 
         if ($record instanceof PageInformation) {
             $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
+        }
+
+        if (!$record instanceof RecordInterface) {
+            throw new \InvalidArgumentException('The argument "record" must be an instance of RecordInterface or PageInformation. Given: ' . get_debug_type($record),);
         }
 
         $name = LocalizationUtility::translate($this->tcaSchema->get($record->getMainType())->getField($field)->getLabel());
