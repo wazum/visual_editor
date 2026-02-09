@@ -81,18 +81,23 @@ final class PageEditController
         private readonly PolicyRegistry $policyRegistry,
         private readonly Typo3Version $typo3Version,
         private readonly ConnectionPool $connectionPool,
-    ) {
+    )
+    {
     }
 
     private function initialize(ServerRequestInterface $request): void
     {
         $backendUser = $this->getBackendUser();
-        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException('Missing "id" query parameter', 8412770259,));
+        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException(
+            'Missing "id" query parameter', 8412770259,
+        ));
         $this->moduleData = $request->getAttribute('moduleData');
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
-            throw new InvalidArgumentException('Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0), 4884897021);
+            throw new InvalidArgumentException(
+                'Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0), 4884897021,
+            );
         }
 
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $pageInfo);
@@ -147,7 +152,9 @@ final class PageEditController
         $view = $this->moduleTemplateFactory->create($request);
 
         $view->setTitle('Edit Page · ' . $this->pageRecord->get('title'));
-        $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
+        }
 
         $iframeUrl = $this->iframeUrl();
         $view->assignMultiple([
@@ -250,11 +257,12 @@ final class PageEditController
                 ),
                 arguments: [
                     'id' => $this->pageRecord->getUid(),
-                //                    'languages' => $this->pageContext->selectedLanguageIds,
-                ]
+                    //                    'languages' => $this->pageContext->selectedLanguageIds,
+                ],
             );
         } else {
-            $reloadButton = $buttonBar->makeLinkButton()
+            $reloadButton = $buttonBar
+                ->makeLinkButton()
                 ->setHref($request->getAttribute('normalizedParams')->getRequestUri())
                 ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
                 ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
@@ -299,7 +307,8 @@ final class PageEditController
         }
 
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');
-        $queryBuilder->getRestrictions()
+        $queryBuilder
+            ->getRestrictions()
             ->removeAll()
             ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
             ->add(GeneralUtility::makeInstance(WorkspaceRestriction::class, $this->getBackendUser()->workspace));
@@ -348,7 +357,8 @@ final class PageEditController
             ],
         ];
 
-        return $buttonBar->makeLinkButton()
+        return $buttonBar
+            ->makeLinkButton()
             ->setHref((string)$this->uriBuilder->buildUriFromRoute('record_edit', $params))
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:editPageProperties'))
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
@@ -356,7 +366,8 @@ final class PageEditController
 
     private function makeClearCacheButton(ButtonBar $buttonBar): ButtonInterface
     {
-        return $buttonBar->makeLinkButton()
+        return $buttonBar
+            ->makeLinkButton()
             ->setHref('#')
             ->setDataAttributes(['id' => $this->pageRecord->getUid()])
             ->setClasses('t3js-clear-page-cache')
@@ -426,9 +437,11 @@ final class PageEditController
                 'isWorkspaceInstalled' => $this->packageManager->isPackageActive('workspaces'),
             ])
             ->setLabel(
-                $this->getLanguageService()->sL($active ?
-                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave' :
-                'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave.disabled')
+                $this->getLanguageService()->sL(
+                    $active ?
+                        'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave' :
+                        'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:autosave.disabled',
+                ),
             )
             ->setIcon($this->iconFactory->getIcon('actions-toggle-off', IconSize::SMALL))
             ->setShowLabelText(true);

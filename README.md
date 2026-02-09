@@ -16,14 +16,14 @@ TODO put gifs here
 
 1. 📦 `composer require friendsoftypo3/visual-editor` (or install via 🧩 Extension Manager)
 2. ⚙️ add the SiteSet to your site configuration
-3. 🧱 Add `f:render.text`, `f:render.richText`, `f:contentArea` to your templates (see below)
+3. 🧱 Add `f:render.text`, `f:mark.contentArea` to your templates (see below)
 4. 🧹 Clear caches
 5. 🚀 Start editing!
 
 ## Where to add the ViewHelpers
 
 ### Text/RichText Fields
-Replace the output of your texts with the `f:render.text`/`f:render.richText` ViewHelper.
+Replace the output of your texts with the `f:render.text` ViewHelper.
 
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html
@@ -61,7 +61,7 @@ after:
 ````  
 
 ### ContentArea
-Add the `f:contentArea` ViewHelper to the container element that holds your content elements.
+Add the `f:mark.contentArea` ViewHelper to the container element that holds your content elements.
 
 search for:
 - `f:cObject` (typoscript rendering):
@@ -70,9 +70,9 @@ search for:
   <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
   
   after:
-  <f:contentArea colPos="3">
+  <f:mark.contentArea colPos="3">
     <f:cObject typoscriptObjectPath="lib.dynamicContent" data="{colPos: '3'}"/>
-  </f:contentArea>
+  </f:mark.contentArea>
   ````
 - `each="{children_` (EXT:container):
   ````html
@@ -82,11 +82,11 @@ search for:
   </f:for>
 
   after:
-  <f:contentArea colPos="201" tx_container_parent="{record.uid}">
+  <f:mark.contentArea colPos="201" tx_container_parent="{record.uid}">
     <f:for each="{children_201}" as="element">
       {element.renderedContent -> f:format.raw()}
     </f:for>
-  </f:contentArea>
+  </f:mark.contentArea>
   ````
 - `v:content.render` (EXT:vhs):
   ````html
@@ -94,9 +94,9 @@ search for:
   <v:content.render column="0"/>
   
   after:
-  <f:contentArea colPos="0">
+  <f:mark.contentArea colPos="0">
     <v:content.render column="0"/>
-  </f:contentArea>
+  </f:mark.contentArea>
   ````
 - `flux:content.render` (EXT:flux):
   ````html
@@ -104,9 +104,9 @@ search for:
   <flux:content.render area="column0"/>
   
   after:
-  <f:contentArea colPos="{data.uid}00">
+  <f:mark.contentArea colPos="{data.uid}00">
     <flux:content.render area="column0"/>
-  </f:contentArea>
+  </f:mark.contentArea>
   ````
 
 ## Multi Site/Domain Setup

@@ -15,10 +15,10 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace TYPO3\CMS\VisualEditor\Event;
+namespace TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event;
 
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Core\Domain\RecordInterface;
+use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
 
 /**
  * Event to modify the rendered content area output.
@@ -29,15 +29,10 @@ use TYPO3\CMS\Core\Domain\RecordInterface;
  */
 final class RenderContentAreaEvent
 {
-    /**
-     * @param array{name: string, colPos: string, identifier: string, disallowedContentTypes: string, records: list<RecordInterface>} $contentAreaConfiguration
-     * @param array<string, mixed> $additionalArguments
-     */
     public function __construct(
         private string $renderedContentArea,
-        private readonly array $contentAreaConfiguration,
-        private readonly array $additionalArguments,
-        private readonly ?ServerRequestInterface $request,
+        private readonly ContentArea $contentArea,
+        private readonly ServerRequestInterface $request,
     ) {
     }
 
@@ -47,31 +42,20 @@ final class RenderContentAreaEvent
     }
 
     /**
-     * Set the rendered content areas HTML
-     * make sure to return escaped content if necessary
+     * Set the rendered content area's HTML.
+     * Make sure to return escaped content if necessary.
      */
     public function setRenderedContentArea(string $renderedContentArea): void
     {
         $this->renderedContentArea = $renderedContentArea;
     }
 
-    /**
-     * @return array{name: string, colPos: string, identifier: string, disallowedContentTypes: string, records: list<RecordInterface>}
-     */
-    public function getContentAreaConfiguration(): array
+    public function getContentArea(): ContentArea
     {
-        return $this->contentAreaConfiguration;
+        return $this->contentArea;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getAdditionalArguments(): array
-    {
-        return $this->additionalArguments;
-    }
-
-    public function getRequest(): ?ServerRequestInterface
+    public function getRequest(): ServerRequestInterface
     {
         return $this->request;
     }

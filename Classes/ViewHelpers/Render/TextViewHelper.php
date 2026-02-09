@@ -8,6 +8,7 @@ use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Schema\Field\InputFieldType;
 use TYPO3\CMS\Core\Schema\Field\TextFieldType;
@@ -54,6 +55,7 @@ final class TextViewHelper extends AbstractViewHelper
         private readonly AssetCollector $assetCollector,
         private readonly RichTextConfigurationService $richTextConfigurationService,
         private readonly RichtextConfiguration $richtext,
+        private readonly Typo3Version $typo3Version,
     )
     {
     }
@@ -62,7 +64,11 @@ final class TextViewHelper extends AbstractViewHelper
     {
         parent::initializeArguments();
 
-        $this->registerArgument('record', RecordInterface::class . '|' . PageInformation::class, 'A Record API Object (field is also needed)');
+        $type = 'object';
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            $type = RecordInterface::class . '|' . PageInformation::class;
+        }
+        $this->registerArgument('record', $type, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', true);
     }
 
@@ -173,7 +179,9 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('field', $field->getName());
         $tag->addAttribute('name', $field->getLabel());
 
-        $title = LocalizationUtility::translate('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title', arguments: [$field->getLabel()],
+        $title = LocalizationUtility::translate(
+            'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
+            arguments: [$field->getLabel()],
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('options', $options);
