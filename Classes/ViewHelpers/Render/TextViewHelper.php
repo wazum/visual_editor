@@ -109,16 +109,17 @@ final class TextViewHelper extends AbstractViewHelper
         $canEdit = $this->editModeService->canEditField($record, $field);
 
         $fieldSchema = $this->tcaSchema->get($record->getFullType())->getField($field);
+        $label = LocalizationUtility::translate($fieldSchema->getLabel());
         if ($fieldSchema instanceof InputFieldType) {
-            return $this->renderInput($value, $record, $fieldSchema, $canEdit);
+            return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit);
         }
 
         if ($fieldSchema instanceof TextFieldType) {
             if (!$fieldSchema->isRichText()) {
-                return $this->renderInput($value, $record, $fieldSchema, $canEdit, allowNewlines: true);
+                return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit, allowNewlines: true);
             }
 
-            return $this->renderRichText($value, $record, $fieldSchema, $canEdit);
+            return $this->renderRichText($value, $record, $fieldSchema, $label, $canEdit);
         }
 
         $table = $record->getMainType();
@@ -128,6 +129,7 @@ final class TextViewHelper extends AbstractViewHelper
     private function renderInput(string $value,
         RecordInterface $record,
         InputFieldType|TextFieldType $field,
+        string $label,
         bool $editMode,
         bool $allowNewlines = false): Input
     {
@@ -137,7 +139,7 @@ final class TextViewHelper extends AbstractViewHelper
         }
 
         if (!$editMode) {
-            return new Input($field->getLabel(), $html, !$value, $value); // TODO maybe we should remove the Input and RichText classes?
+            return new Input($label, $html, !$value, $value); // TODO maybe we should remove the Input and RichText classes?
         }
 
         $tag = GeneralUtility::makeInstance(TagBuilder::class);
@@ -146,18 +148,18 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('uid', $record->getUid());
         $tag->addAttribute('field', $field->getName());
 
-        $tag->addAttribute('name', $field->getLabel());
-        $tag->addAttribute('title', 'Edit field ' . $field->getLabel());
+        $tag->addAttribute('name', $label);
+        $tag->addAttribute('title', 'Edit field ' . $label);
         $tag->addAttribute('allowNewlines', $allowNewlines);
 
         $tag->setContent($html);
 
         $tag->forceClosingTag(true);
 
-        return new Input($field->getLabel(), $tag->render(), !$value, $value ?: '');
+        return new Input($label, $tag->render(), !$value, $value ?: '');
     }
 
-    private function renderRichText(string $value, RecordInterface $record, TextFieldType $field, bool $editMode): RichText
+    private function renderRichText(string $value, RecordInterface $record, TextFieldType $field, string $label, bool $editMode): RichText
     {
         if (!$editMode) {
             $escapedValue = $this->renderingContext->getViewHelperInvoker()->invoke(
@@ -166,7 +168,7 @@ final class TextViewHelper extends AbstractViewHelper
                 $this->renderingContext,
                 fn(): string => $value,
             );
-            return new RichText($field->getLabel(), $escapedValue, $value === '', $value);
+            return new RichText($label, $escapedValue, $value === '', $value);
         }
 
         [$options, $processingConfiguration] = $this->getOptions($record, $field->getName());
@@ -177,11 +179,11 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('table', $record->getMainType());
         $tag->addAttribute('uid', $record->getUid());
         $tag->addAttribute('field', $field->getName());
-        $tag->addAttribute('name', $field->getLabel());
+        $tag->addAttribute('name', $label);
 
         $title = LocalizationUtility::translate(
             'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
-            arguments: [$field->getLabel()],
+            arguments: [$label],
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('options', $options);
@@ -189,7 +191,7 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->setContent($escapedValue);
 
         $tag->forceClosingTag(true);
-        return new RichText($field->getLabel(), $tag->render(), $value === '', $value);
+        return new RichText($label, $tag->render(), $value === '', $value);
     }
 
     /**

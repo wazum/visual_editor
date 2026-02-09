@@ -9,13 +9,14 @@ use RuntimeException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
+use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-
 use function assert;
+use function method_exists;
 
 final readonly class EditModeService
 {
@@ -24,7 +25,8 @@ final readonly class EditModeService
         private UriBuilder $uriBuilder,
         private PageRenderer $pageRenderer,
         private TcaSchemaFactory $tcaSchema,
-    ) {
+    )
+    {
     }
 
     public function isEditMode(): bool
@@ -99,7 +101,7 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         }
     }
 
-    public function canEditField(Record $record, string $field): bool
+    public function canEditField(RecordInterface $record, string $field): bool
     {
         if (!$this->isEditMode()) {
             return false; // not in edit mode
@@ -119,8 +121,12 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         // user access check
         /** @var BackendUserAuthentication $beUser */
         $beUser = $GLOBALS['BE_USER'];
-        if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
-            return false; // no access to this language
+        if ($record instanceof Record || method_exists($record, 'getLanguageId')) {
+            if (!$beUser->checkLanguageAccess((int)$record->getLanguageId())) {
+                return false; // no access to this language
+            }
+        } else {
+            throw new RuntimeException('RecordInterface implementation does not have getLanguageId method. This is required for access check. Please implement getLanguageId method in ' . get_class($record) . ' OR report this error', 1770639877);
         }
 
         if (!$beUser->check('tables_modify', $record->getMainType())) {
