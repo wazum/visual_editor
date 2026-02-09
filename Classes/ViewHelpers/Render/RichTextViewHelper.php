@@ -10,6 +10,8 @@ use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Page\AssetCollector;
+use TYPO3\CMS\Core\Schema\Field\InputFieldType;
+use TYPO3\CMS\Core\Schema\Field\TextFieldType;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -19,25 +21,18 @@ use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationService;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationServiceDto;
 use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
+use TYPO3Fluid\Fluid\Core\Parser\UnsafeHTML;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+use function dd;
 use function json_encode;
 
+/**
+ * @deprecated TODO Will be removed after https://review.typo3.org/c/Packages/TYPO3.CMS/+/92746 is merged
+ */
 final class RichTextViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;
-
-    public function __construct(
-        private readonly EditModeService $editModeService,
-        private readonly RecordFactory $recordFactory,
-        private readonly AssetCollector $assetCollector,
-        private readonly RichTextConfigurationService $richTextConfigurationService,
-        private readonly RichtextConfiguration $richtext,
-        private readonly TcaSchemaFactory $tcaSchema,
-        private readonly RteHtmlParser $rteHtmlParser,
-    )
-    {
-    }
 
     public function initializeArguments(): void
     {
@@ -45,7 +40,17 @@ final class RichTextViewHelper extends AbstractViewHelper
 
         $this->registerArgument('record', RecordInterface::class . '|' . PageInformation::class, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', true);
-        $this->registerArgument('htmlArguments', 'array', '@see f:format.html arguments', false, []);
+    }
+
+    public function validateAdditionalArguments(array $arguments): void
+    {
+        // This prevents the default Fluid exception from being thrown for this ViewHelper if it's used
+        // with arguments that aren't defined in initialArguments(). We do this to make it possible for
+        // extensions to offer additional functionality by overriding this ViewHelper, which sometimes
+        // requires adding more (most likely optional) arguments to the ViewHelper's definition.
+        // Note that this is probably not a long-term solution and might change with future TYPO3 major
+        // versions. Currently, it has minimal impact to template authors and makes things possible
+        // for extensions that wouldn't be possible otherwise.
     }
 
     public function getContentArgumentName(): string
@@ -53,97 +58,13 @@ final class RichTextViewHelper extends AbstractViewHelper
         return 'record';
     }
 
-    public function render(): RichText
-    {
-        $this->editModeService->init();
-
-        $record = $this->renderChildren();
-        $field = $this->arguments['field'];
-
-        if ($record instanceof PageInformation) {
-            $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
-        }
-
-        if (!$record instanceof RecordInterface) {
-            throw new \InvalidArgumentException('The argument "record" must be an instance of RecordInterface or PageInformation. Given: ' . get_debug_type($record),);
-        }
-
-        $name = LocalizationUtility::translate($this->tcaSchema->get($record->getMainType())->getField($field)->getLabel());
-
-        $value = $record->get($field) ?? '';
-
-        $canEdit = $this->editModeService->canEditField($record, $field);
-        if (!$canEdit) {
-            $escapedValue = $this->text2html($value);
-            return new RichText($name, $escapedValue, $value === '', $value);
-        }
-
-        [$options, $processingConfiguration] = $this->getOptions($record, $field);
-        $escapedValue = $this->rteHtmlParser->transformTextForRichTextEditor($value, $processingConfiguration);
-
-        $tag = GeneralUtility::makeInstance(TagBuilder::class);
-        $tag->setTagName('ve-editable-rich-text');
-        $tag->addAttribute('table', $record->getMainType());
-        $tag->addAttribute('uid', $record->getUid());
-        $tag->addAttribute('field', $field);
-
-        $tag->addAttribute('name', $name);
-
-        $title = LocalizationUtility::translate('LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title', arguments: [$name]);
-        $tag->addAttribute('title', $title);
-        $tag->addAttribute('options', $options);
-
-        $tag->setContent($escapedValue);
-
-        $tag->forceClosingTag(true);
-        return new RichText($name, $tag->render(), $value === '', $value);
-    }
-
-    private function text2html(string $value): string
+    public function render(): UnsafeHTML
     {
         return $this->renderingContext->getViewHelperInvoker()->invoke(
-            HtmlViewHelper::class,
-            $this->arguments['htmlArguments'],
+            TextViewHelper::class,
+            $this->arguments,
             $this->renderingContext,
-            fn(): string => $value,
+            $this->buildRenderChildrenClosure(),
         );
-    }
-
-    /**
-     * @return array{0:string, 1:array<mixed>}
-     */
-    private function getOptions(Record $record, string $field): array
-    {
-        $schema = $this->tcaSchema->get($record->getFullType());
-        $richtextConfiguration = $this->richtext->getConfiguration(
-            $record->getMainType(),
-            $field,
-            $record->getPid(),
-            $record->getRecordType(),
-            $schema->getField($field)->getConfiguration(),
-        );
-
-        $richTextConfigurationServiceDto = new RichTextConfigurationServiceDto(
-            tableName: $record->getMainType(),
-            uid: $record->getUid(),
-            fieldName: $field,
-            recordTypeValue: $record->getRecordType(),
-            effectivePid: $record->getPid(),
-            richtextConfigurationName: $richtextConfiguration['preset'],
-            label: 'Text',
-            placeholder: '',
-            readOnly: false,
-            data: $record->getRawRecord()->toArray(),
-            additionalConfiguration: $richtextConfiguration['editor']['config'],
-            externalPlugins: $richtextConfiguration['editor']['externalPlugins'],
-        );
-
-        $config = $this->richTextConfigurationService->resolveCkEditorConfiguration($richTextConfigurationServiceDto);
-
-        unset($config['height']); // height is set by the content itself and css
-        $config['debug'] = false; // for now we disable debug mode
-
-        $this->assetCollector->addJavaScriptModule('@typo3/ckeditor5/translations/' . $config['language']['ui'] . '.js');
-        return [json_encode($config, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), $richtextConfiguration['proc.'] ?? []];
     }
 }
