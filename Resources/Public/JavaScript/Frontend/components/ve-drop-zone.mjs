@@ -226,16 +226,16 @@ export class VeDropZone extends LitElement {
     let text = html``;
     if (this.target < 0) {
       const name = this.getComponentName(this.target * -1);
-      text = html`${text} <small>after</small> <b>${name}</b>`; // TODO label
+      text = html`${text} <small>${lll('frontend.after')}</small> <b>${name}</b>`; // TODO label
     }
     if (this.tx_container_parent || this.colPos > 99) {
       // EXT:container + EXT:flux support
       const uidOfParent = this.tx_container_parent || parseInt(this.colPos / 100);
       const nameOfParent = this.getComponentName(uidOfParent);
-      text = html`${text} <small>in</small> <b>${nameOfParent}</b>`; // TODO label
+      text = html`${text} <small>${lll('frontend.in')}</small> <b>${nameOfParent}</b>`; // TODO label
     }
     const columnName = this.columnName || (this.colPos % 100);
-    text = html`${text} <small>in column</small> <b>${columnName}</b>`; // TODO label
+    text = html`${text} <small>${lll('frontend.inColumn')}</small> <b>${columnName}</b>`; // TODO label
 
     return html`
       <div class=${classMap(classes)}

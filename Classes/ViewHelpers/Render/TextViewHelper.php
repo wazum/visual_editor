@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\ViewHelpers\Render;
 
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Configuration\Richtext as RichtextConfiguration;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Domain\RecordInterface;
@@ -89,7 +90,7 @@ final class TextViewHelper extends AbstractViewHelper
         }
 
         if (!$record instanceof RecordInterface) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The record argument must be an instance of ' . PageInformation::class . ' or ' . RecordInterface::class . '. Given: ' . get_debug_type(
                     $record,
                 ), 1770539910,
@@ -100,7 +101,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         if (!is_string($value)) {
             $table = $record->getMainType();
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The value of the field "' . $table . '.' . $field . '" must be a string. Given: ' . get_debug_type($value),
                 1770321858,
             );
@@ -109,7 +110,7 @@ final class TextViewHelper extends AbstractViewHelper
         $canEdit = $this->editModeService->canEditField($record, $field);
 
         $fieldSchema = $this->tcaSchema->get($record->getFullType())->getField($field);
-        $label = LocalizationUtility::translate($fieldSchema->getLabel());
+        $label = LocalizationUtility::translate($fieldSchema->getLabel(), languageKey: $this->editModeService->getBackendUserLanguage());
         if ($fieldSchema instanceof InputFieldType) {
             return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit);
         }
@@ -123,7 +124,7 @@ final class TextViewHelper extends AbstractViewHelper
         }
 
         $table = $record->getMainType();
-        throw new \InvalidArgumentException('The field "' . $table . '.' . $field . '" is not supported. Given: ' . get_debug_type($fieldSchema), 1770618219);
+        throw new InvalidArgumentException('The field "' . $table . '.' . $field . '" is not supported. Given: ' . get_debug_type($fieldSchema), 1770618219);
     }
 
     private function renderInput(string $value,
@@ -149,7 +150,13 @@ final class TextViewHelper extends AbstractViewHelper
         $tag->addAttribute('field', $field->getName());
 
         $tag->addAttribute('name', $label);
-        $tag->addAttribute('title', 'Edit field ' . $label);
+
+        $title = LocalizationUtility::translate(
+            'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
+            arguments: [$label],
+            languageKey: $this->editModeService->getBackendUserLanguage(),
+        );
+        $tag->addAttribute('title', $title);
         $tag->addAttribute('allowNewlines', $allowNewlines);
 
         $tag->setContent($html);
@@ -184,6 +191,7 @@ final class TextViewHelper extends AbstractViewHelper
         $title = LocalizationUtility::translate(
             'LLL:EXT:visual_editor/Resources/Private/Language/locallang.xlf:editable.title',
             arguments: [$label],
+            languageKey: $this->editModeService->getBackendUserLanguage(),
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('options', $options);

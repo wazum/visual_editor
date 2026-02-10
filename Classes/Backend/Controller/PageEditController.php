@@ -517,7 +517,7 @@ final class PageEditController
         assert($button instanceof GenericButton);
         return $button
             ->setTag('ve-show-empty-toggle')
-            ->setLabel('Show empty')
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:showEmpty'))
             ->setIcon($this->iconFactory->getIcon('actions-hyphen', IconSize::SMALL))
             ->setShowLabelText(true);
     }

@@ -53,7 +53,7 @@ export class VeEditableText extends LitElement {
    * @param changedProperties {Map<PropertyKey, unknown>}
    */
   firstUpdated(changedProperties) {
-    this.placeholder = '~' + (this.placeholder || this.title) + '~';
+    this.placeholder = '👀' + (this.placeholder || this.title);
     const aTag = this.closest('a');
     if (aTag) {
       // disable links above editable inputs to prevent navigation when clicking
@@ -71,12 +71,12 @@ export class VeEditableText extends LitElement {
     const hideEmpty = !this.showEmpty && this.value === '' && !this.matches(':focus-within') && !this.changed;
     if (hideEmpty) {
       this.style.display = 'none';
-      if (this.parentElement.innerText === '') {
-        this.parentElement.display = 'none';
+      if (this.parentElement.innerText.trim() === '') {
+        this.parentElement.style.display = 'none';
       }
     } else {
       this.style.display = '';
-      this.parentElement.display = '';
+      this.parentElement.style.display = '';
     }
   }
 

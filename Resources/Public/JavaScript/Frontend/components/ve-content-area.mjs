@@ -72,12 +72,13 @@ export class VeContentArea extends LitElement {
       .replace('__UID_PID__', this.target)
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent || 0);
 
-    const columnHasChild = [...this.children].filter((element) => element.tagName.toLowerCase() === 've-content-element').length > 0; // TODO only count ve-content-element!
+    const columnHasChild = [...this.children].filter((element) => element.tagName.toLowerCase() === 've-content-element').length > 0;
+    const label = lll('frontend.addContentElement') + this.columnName;
     const addButton = html`
       <div class="center">
-        <ve-iframe-popup title="${lll('frontend.addContentElement')}" src="${newContentUrl}" type="ajax">
+        <ve-iframe-popup title="${label}" src="${newContentUrl}" type="ajax">
           <ve-icon name="actions-document-add" width="2em"></ve-icon>
-          ${lll('frontend.addContentElement')} in<!-- TODO label --> ${this.columnName}
+          ${label}
         </ve-iframe-popup>
       </div>`;
     return html`

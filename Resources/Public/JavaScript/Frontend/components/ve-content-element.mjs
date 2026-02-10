@@ -62,7 +62,7 @@ export class VeContentElement extends LitElement {
       .replace('__UID_PID__', -this.uid)
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent);
 
-    openModal(newContentUrl, lll('frontend.addContentElement'), 'large', 'ajax');
+    openModal(newContentUrl, lll('frontend.addContentElement') + this.parentElement.columnName, 'large', 'ajax');
   }
 
   constructor() {

@@ -47,7 +47,7 @@ export class VeEditableRichText extends LitElement {
   }
 
   async firstUpdated() {
-    this.placeholder = this.placeholder || this.title;
+    this.placeholder = '👀' + (this.placeholder || this.title);
     /** @type {HTMLElement} */
     const element = this;
     element.innerHTML = `<div>${element.innerHTML}</div>`;

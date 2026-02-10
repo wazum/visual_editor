@@ -10,11 +10,13 @@ use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
 use function assert;
 use function method_exists;
 
@@ -25,6 +27,7 @@ final readonly class EditModeService
         private UriBuilder $uriBuilder,
         private PageRenderer $pageRenderer,
         private TcaSchemaFactory $tcaSchema,
+        private LanguageServiceFactory $languageServiceFactory,
     )
     {
     }
@@ -51,7 +54,7 @@ final readonly class EditModeService
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
 
-        $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
+        $this->loadLangaugeLabelsInline();
 
         if (!$this->assetCollector->hasInlineJavaScript('veLangInfo')) {
             $request = $GLOBALS['TYPO3_REQUEST'];
@@ -157,5 +160,23 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
     private function isBeUser(): bool
     {
         return ($GLOBALS['BE_USER'] ?? null) instanceof BackendUserAuthentication;
+    }
+
+    private function loadLangaugeLabelsInline(): void
+    {
+        $file = 'EXT:visual_editor/Resources/Private/Language/locallang.xlf';
+        $languageService = $this->languageServiceFactory->create($this->getBackendUserLanguage());
+        foreach($languageService->getLabelsFromResource($file) as $key => $value) {
+            $this->pageRenderer->addInlineLanguageLabel($key, $value);
+        }
+    }
+
+    public function getBackendUserLanguage(): ?string
+    {
+        $backendUserAuthentication = $GLOBALS['BE_USER'];
+        if ($backendUserAuthentication?->user['lang'] !== null) {
+            return $backendUserAuthentication->user['lang'];
+        }
+        return null;
     }
 }

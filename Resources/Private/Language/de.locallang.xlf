@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en" datatype="plaintext" original="EXT:visual_editor/Resources/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
+  <file target-language="de" datatype="plaintext" original="EXT:visual_editor/Retargets/Private/Language/locallang.xlf" date="2026-01-05T12:00:00Z" product-name="cms">
     <header/>
     <body>
       <trans-unit id="autosave">
-        <source>autosave</source>
+        <target>Autospeichern</target>
       </trans-unit>
       <trans-unit id="autosave.disabled">
-        <source>to enable autosave, switch to a workspace</source>
+        <target>Zu Arbeitsumgebung wechseln für Autospeichern</target>
       </trans-unit>
 
       <trans-unit id="editable.title">
-        <source>edit %s</source>
+        <target>%s bearbeiten</target>
       </trans-unit>
 
       <trans-unit id="save">
-        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="save.change">
-        <source>Save 1 change</source>
+        <target>1 Änderung speichern</target>
       </trans-unit>
       <trans-unit id="save.changes">
-        <source>Save %d changes</source>
+        <target>%d Änderungen speichern</target>
       </trans-unit>
       <trans-unit id="saving">
-        <source>Saving ...</source>
+        <target>Wird gespeichert ...</target>
       </trans-unit>
 
       <trans-unit id="frontend.confirmCopy">
-        <source>copy the element?</source>
+        <target>Element kopieren?</target>
       </trans-unit>
       <trans-unit id="frontend.confirmCopy.saveAll">
-        <source>Save all changes, and copy the element?</source>
+        <target>Alle Änderungen speichern und Element kopieren?</target>
       </trans-unit>
       <trans-unit id="frontend.addContentElement">
-        <source>Create new Content in </source>
+        <target>Neuen Inhalt erstellen in </target>
       </trans-unit>
       <trans-unit id="frontend.after">
-        <source>after</source>
+        <target>nach</target>
       </trans-unit>
       <trans-unit id="frontend.in">
-        <source>in</source>
+        <target>in</target>
       </trans-unit>
       <trans-unit id="frontend.inColumn">
-        <source>in column</source>
+        <target>in Spalte</target>
       </trans-unit>
       <trans-unit id="frontend.resetChanges">
-        <source>reset changes</source>
+        <target>Änderungen zurücksetzen</target>
       </trans-unit>
     </body>
   </file>
