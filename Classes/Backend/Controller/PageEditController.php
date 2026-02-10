@@ -426,6 +426,10 @@ final class PageEditController
             return null;
         }
 
+        if (!$this->packageManager->isPackageActive('workspaces')) {
+            return null;
+        }
+
         $button = $buttonBar->makeButton(GenericButton::class);
         assert($button instanceof GenericButton);
         $active = $this->getBackendUser()->workspace;

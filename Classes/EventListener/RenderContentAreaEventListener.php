@@ -34,6 +34,7 @@ final readonly class RenderContentAreaEventListener
         $pageUid = $event->getRequest()->getAttribute('frontend.page.information')->getId();
         $tag->addAttribute('target', $pageUid);
         $tag->addAttribute('colPos', $event->getContentArea()->getColPos());
+        $tag->addAttribute('columnName', $event->getContentArea()->getName());
 
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {

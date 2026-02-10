@@ -6,16 +6,20 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Mark;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+use function is_array;
+use function method_exists;
 
 /**
  * ViewHelper to render a content area with possible modifications by event listeners.
  * This can be used to allow extensions to modify the output of content areas.
  * For example, for adding debug wrappers or editing features.
  *
- * @deprecated in TYPO3 14 you should use f:render.contentArea instead!!! (Will be removed in TYPO3 15)
+ * @deprecated In TYPO3 14 you should use f:render.contentArea instead!!! (Will be removed in TYPO3 15)
  *
  *  ```
  *    <f:mark.contentArea colPos="3">
@@ -48,23 +52,49 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
     public function render(): string
     {
-        $request = $this->renderingContext->hasAttribute(ServerRequestInterface::class) ?
-            $this->renderingContext->getAttribute(ServerRequestInterface::class) :
-            null;
+        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
 
         $additionalArguments = $this->arguments;
         unset($additionalArguments['colPos'], $additionalArguments['pageUid']);
+
+        $colPos = (int)$this->arguments['colPos'];
+        $txContainerParent = (int)$this->arguments['txContainerParent'];
+        $name = $this->getName($request, $colPos, $txContainerParent);
 
         $event = $this->eventDispatcher->dispatch(
             new RenderContentAreaEvent(
                 renderedContentArea: $this->renderChildren(),
                 contentArea: new ContentArea(
-                    colPos: (int)$this->arguments['colPos'],
-                    tx_container_parent: (int)$this->arguments['txContainerParent'],
+                    colPos: $colPos,
+                    name: $name,
+                    tx_container_parent: $txContainerParent,
                 ),
                 request: $request,
             ),
         );
         return $event->getRenderedContentArea();
+    }
+
+    private function getName(ServerRequestInterface $request, int $colPos, int $txContainerParent): string
+    {
+        if ($txContainerParent) {
+            return (string)$colPos; // TODO find name from container extension
+        }
+
+        /**
+         * @var PageInformation $pageInformation
+         */
+        $pageInformation = $request->getAttribute('frontend.page.information');
+        foreach ($pageInformation->getPageLayout()->getContentAreas() as $contentArea) {
+            if (is_array($contentArea) && (int)$contentArea['colPos'] === $colPos) {
+                return LocalizationUtility::translate($contentArea['name']);
+            }
+            if (method_exists($contentArea, 'getName') && method_exists($contentArea, 'getColPos')) {
+                if ($contentArea->getColPos() === $colPos) {
+                    return LocalizationUtility::translate($contentArea->getName());
+                }
+            }
+        }
+        return (string)$colPos;
     }
 }

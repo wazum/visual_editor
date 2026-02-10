@@ -74,7 +74,6 @@ final readonly class ContentElementWrapperService
 
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
         $tag->addAttribute('elementName', $this->getContentTypeLabel($record));
-        $tag->addAttribute('editUrl', $this->getEditUrl($record));
         $tag->addAttribute('table', $table);
         $tag->addAttribute('id', $table . ':' . $record->getUid());
         $tag->addAttribute('uid', (string)$record->getUid());

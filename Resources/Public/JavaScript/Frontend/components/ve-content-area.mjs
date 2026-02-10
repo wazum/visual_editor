@@ -8,6 +8,7 @@ export class VeContentArea extends LitElement {
   static properties = {
     target: {type: Number},
     colPos: {type: Number},
+    columnName: {type: String},
     tx_container_parent: {type: Number},
 
     showElementOverlay: {type: Boolean, attribute: false},
@@ -31,13 +32,14 @@ export class VeContentArea extends LitElement {
     }
     const parent = element.parentElement;
 
-    const notAllowedParentTags = ['ve-content-element', 've-content-area', 've-drag-handle', 've-drop-zone', 'body'];
-    if (notAllowedParentTags.includes(parent.tagName.toLowerCase())) {
-      console.warn(element, 've-content-area: Child element cannot be <' + parent.tagName.toLowerCase() + '> please wrap it in a div or similar.');
+    const notAllowedParentTags = ['body'];
+    const parentTagName = parent.tagName.toLowerCase();
+    if (parentTagName.includes('-') || notAllowedParentTags.includes(parentTagName)) {
+      console.warn(element, 've-content-area: Parent element cannot be <' + parentTagName + '> please wrap it in a div or similar.');
       return;
     }
 
-    element.setAttribute('was', parent.tagName.toLowerCase());
+    element.setAttribute('was', parentTagName);
     const properties = Object.keys(element.constructor.properties).map(prop => prop.toLowerCase());
     for (const attributeName of parent.getAttributeNames()) {
       if (!properties.includes(attributeName.toLowerCase())) {
@@ -70,12 +72,12 @@ export class VeContentArea extends LitElement {
       .replace('__UID_PID__', this.target)
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent || 0);
 
-    const columnHasChild = this.children.length > 0; // TODO only count ve-content-element!
+    const columnHasChild = [...this.children].filter((element) => element.tagName.toLowerCase() === 've-content-element').length > 0; // TODO only count ve-content-element!
     const addButton = html`
       <div class="center">
-        <ve-iframe-popup title="new Content" src="${newContentUrl}" type="ajax">
+        <ve-iframe-popup title="${lll('frontend.addContentElement')}" src="${newContentUrl}" type="ajax">
           <ve-icon name="actions-document-add" width="2em"></ve-icon>
-          ${lll('frontend.addContentElement')}
+          ${lll('frontend.addContentElement')} in<!-- TODO label --> ${this.columnName}
         </ve-iframe-popup>
       </div>`;
     return html`
@@ -84,6 +86,7 @@ export class VeContentArea extends LitElement {
         table="tt_content"
         target="${this.target}"
         colPos="${this.colPos}"
+        columnName="${this.columnName}"
         tx_container_parent="${this.tx_container_parent}"
       ></ve-drop-zone>
       <slot></slot><!-- slot must be top level to mitigate all CSS problems -->

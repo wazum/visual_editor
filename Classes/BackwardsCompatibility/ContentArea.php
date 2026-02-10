@@ -9,13 +9,22 @@ namespace TYPO3\CMS\VisualEditor\BackwardsCompatibility;
  */
 final readonly class ContentArea
 {
-    public function __construct(private int $colPos, private int $tx_container_parent)
+    public function __construct(
+        private int $colPos,
+        private string $name,
+        private int $tx_container_parent,
+    )
     {
     }
 
     public function getColPos(): int
     {
         return $this->colPos;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     public function getConfiguration(): array

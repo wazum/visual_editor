@@ -25,7 +25,7 @@ use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
  * This can be used to alter the final HTML of a content area,
  * for example to render a debug wrapper around it.
  *
- * TODO make this work again!
+ * @deprecated In TYPO3 14 you should use f:render.contentArea instead!!! (Will be removed in TYPO3 15)
  */
 final class RenderContentAreaEvent
 {

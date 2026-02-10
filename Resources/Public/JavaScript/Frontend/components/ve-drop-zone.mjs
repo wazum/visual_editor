@@ -17,6 +17,7 @@ export class VeDropZone extends LitElement {
 
     target: {type: Number},
     colPos: {type: Number},
+    columnName: {type: String},
     tx_container_parent: {type: Number},
 
     show: {type: Boolean, state: true, attribute: false},
@@ -233,7 +234,8 @@ export class VeDropZone extends LitElement {
       const nameOfParent = this.getComponentName(uidOfParent);
       text = html`${text} <small>in</small> <b>${nameOfParent}</b>`; // TODO label
     }
-    text = html`${text} <small>in column</small> <b>${this.colPos % 100}</b>`; // TODO label
+    const columnName = this.columnName || (this.colPos % 100);
+    text = html`${text} <small>in column</small> <b>${columnName}</b>`; // TODO label
 
     return html`
       <div class=${classMap(classes)}

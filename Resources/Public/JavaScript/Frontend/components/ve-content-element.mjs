@@ -80,7 +80,7 @@ export class VeContentElement extends LitElement {
     });
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
-      const message = 'Error: <ve-content-element> must be inside an <ve-content-area> element.';
+      const message = 'Use f:render.contentArea or f:mark.contentArea at this location!';
       this.innerHTML = `<ve-error text="${message}"/>`;
       throw new Error(message);
     }
@@ -94,7 +94,7 @@ export class VeContentElement extends LitElement {
     this.parentElement.setAttribute('target', this.pid);
 
     if (this.hiddenFieldName) {
-      dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, this.isHidden);
+      dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, !!this.isHidden);
     }
 
     /** @type {HTMLElement} */
@@ -108,14 +108,10 @@ export class VeContentElement extends LitElement {
       console.warn(element, 've-content-element: Expected exactly one child element, found ' + element.childElementCount);
       return;
     }
-    const notAllowedChildTags = ['style', 'script', 'iframe', 've-content-element', 've-content-area', 've-drag-handle', 've-drop-zone'];
-    if (notAllowedChildTags.includes(element.firstElementChild.tagName.toLowerCase())) {
-      console.warn(element, 've-content-element: Child element cannot be <' + element.firstElementChild.tagName.toLowerCase() + '> please wrap it in a div or similar.');
-      // set this.style.display = 'none'; if first child is also not visible
-      const isChildVisible = !!(element.firstElementChild.offsetWidth || element.firstElementChild.offsetHeight || element.firstElementChild.getClientRects().length);
-      if (!isChildVisible) {
-        element.style.display = 'none';
-      }
+    const notAllowedChildTags = ['style', 'script', 'iframe'];
+    const firstChildTagName = element.firstElementChild.tagName.toLowerCase();
+    if (firstChildTagName.includes('-') || notAllowedChildTags.includes(firstChildTagName)) {
+      console.warn(element, 've-content-element: Child element cannot be <' + firstChildTagName + '> please wrap it in a div or similar.');
       return;
     }
 
@@ -172,6 +168,7 @@ export class VeContentElement extends LitElement {
         uid="${this.uid}"
         target="${-this.uid}"
         colPos="${this.colPos}"
+        columnName="${this.parentElement.columnName}"
         tx_container_parent="${this.tx_container_parent}"
       ></ve-drop-zone>
       <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}"></div>
