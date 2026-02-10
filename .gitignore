@@ -1,4 +1,4 @@
-var/
-vendor/
-composer.lock
-public/
+/var/
+/vendor/
+/composer.lock
+/public/

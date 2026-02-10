@@ -28,10 +28,15 @@ Replace the output of your texts with the `f:render.text` ViewHelper.
 - record is already a [Record](https://docs.typo3.org/permalink/t3coreapi:record-objects) object:
 ````html
 before:
-<h1>{record.header}</h1>
+<f:if condition="{record.header}">
+  <h1>{record.header}</h1>
+</f:if>
 
 after:
-<h1><f:render.text record="{record}" field="header" /></h1>
+<f:variable name="header" value="{record -> f:render.text(field:'header')}" />
+<f:if condition="{header}">
+  <h1>{header}</h1>
+</f:if>
 ````
 If you do not have a Record object yet, there are two options:  
 Add it via [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtransformationprocessor):
@@ -82,7 +87,7 @@ search for:
   </f:for>
 
   after:
-  <f:mark.contentArea colPos="201" tx_container_parent="{record.uid}">
+  <f:mark.contentArea colPos="201" txContainerParent="{record.uid}">
     <f:for each="{children_201}" as="element">
       {element.renderedContent -> f:format.raw()}
     </f:for>
