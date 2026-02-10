@@ -23,7 +23,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  *    </f:mark.contentArea>
  *  ```
  *  ```
- *    <f:mark.contentArea colPos="3" tx_container_parent="{record.tx_container_parent}">
+ *    <f:mark.contentArea colPos="3" txContainerParent="{record.tx_container_parent}">
  *        <f:for each="{children_200}" as="record">
  *            {record.renderedContent -> f:format.raw()}
  *        </f:for>
@@ -43,7 +43,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
         parent::initializeArguments();
         $this->registerArgument('colPos', 'int', 'The colPos number', true);
         // this class is a 100% copy of the core ContentAreaViewHelper, it is here for adding the tx_container_parent argument and making it available for TYPO3 13
-        $this->registerArgument('tx_container_parent', 'int', 'if you have EXT:container you need to add record.tx_container_parent', false, 0);
+        $this->registerArgument('txContainerParent', 'int', 'if you have EXT:container you need to add record.tx_container_parent', false, 0);
     }
 
     public function render(): string
