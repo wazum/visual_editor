@@ -4,23 +4,21 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Middleware;
 
-use RuntimeException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Aspect\PreviewAspect;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
-
 use function array_keys;
 use function implode;
 use function json_decode;
@@ -30,7 +28,8 @@ class PersistenceMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly Context $context,
         private readonly DataHandlerService $dataHandlerService,
-    ) {
+    )
+    {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -44,6 +43,10 @@ class PersistenceMiddleware implements MiddlewareInterface
 
     private function saveStuff(ServerRequestInterface $request): ResponseInterface
     {
+        $token = SecurityAspect::provideIn($this->context)->getReceivedRequestToken();
+        if (!$token || $token->scope !== 'friendsoftypo3/visual-editor') {
+            throw new UnauthorizedException('Invalid or missing request token');
+        }
         $input = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         $data = $input['data'] ?? [];

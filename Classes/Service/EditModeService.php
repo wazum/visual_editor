@@ -8,6 +8,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
@@ -15,6 +17,7 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
@@ -30,6 +33,7 @@ final readonly class EditModeService
         private TcaSchemaFactory $tcaSchema,
         private LanguageServiceFactory $languageServiceFactory,
         private LanguageModeService $languageModeService,
+        private Context $context,
     )
     {
     }
@@ -98,12 +102,14 @@ final readonly class EditModeService
                     'id' => '__PAGE_ID__',
                 ]),
             ]);
+            $nonce = SecurityAspect::provideIn($this->context)->provideNonce();
             $data = [
                 'pageId' => $pageId,
                 'languageId' => $siteLanguage->getLanguageId(),
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage),
+                'token' => RequestToken::create('friendsoftypo3/visual-editor')->toHashSignedJwt($nonce),
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
