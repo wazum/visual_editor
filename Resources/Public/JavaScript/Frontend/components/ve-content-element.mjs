@@ -20,6 +20,7 @@ export class VeContentElement extends LitElement {
     isHidden: {type: Boolean},
     hiddenFieldName: {type: String},
     canModifyRecord: {type: Boolean},
+    canBeMoved: {type: Boolean},
 
     dragInProgress: {type: Boolean, state: true, attribute: false},
     showElementOverlay: {type: Boolean, attribute: false},
@@ -62,7 +63,7 @@ export class VeContentElement extends LitElement {
       .replace('__UID_PID__', -this.uid)
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent);
 
-    openModal(newContentUrl, lll('frontend.addContentElement') + this.parentElement.columnName, 'large', 'ajax');
+    openModal(newContentUrl, lll('frontend.addContentElement') + ' ' + this.parentElement.columnName, 'large', 'ajax');
   }
 
   constructor() {
@@ -132,36 +133,41 @@ export class VeContentElement extends LitElement {
 
   render() {
     const toggleIcon = this.isHidden ? 'actions-toggle-off' : 'actions-toggle-on';
-    return html`
-      ${
+    const statusBar = html`
+      <ve-drag-handle
+        table="${this.table}" uid="${this.uid}"
+        class="button-bar ${this.isHidden ? 'hidden' : ''} ${this.dragInProgress ? 'dragAndDropActive' : ''}"
+        isActive="${this.canBeMoved ? 'true' : 'false'}"
+      >
+        <span class="button-bar-headline" title="uid:${this.uid}">
+                ${this.canBeMoved ? '⠿ ' : ''}${this.elementName}
+              </span>
+        <!-- TODO extract button bar as separate component -->
+        <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
+          <ve-icon name="actions-open"/>
+        </a>
+        ${
+          this.hiddenFieldName ?
+            html`
+              <a class="button" @click="${this._toggleHidden}">
+                <ve-icon name="${toggleIcon}"/>
+              </a>
+            ` : ''
+        }
+        <a class="button" @click="${this._delete}">
+          <ve-icon name="actions-delete"/>
+        </a>
+        ${
+          window.veInfo.allowNewContent ? html`
+            <a class="button" @click="${this._addAbove}">
+              <ve-icon name="actions-document-add"/>
+            </a>
+          ` : ''
+        }
+      </ve-drag-handle>`;
 
-        this.canModifyRecord ?
-          html`
-            <ve-drag-handle
-              table="${this.table}" uid="${this.uid}"
-              class="button-bar ${this.isHidden ? 'hidden' : ''} ${this.dragInProgress ? 'dragAndDropActive' : ''}"
-            >
-              <span class="button-bar-headline" title="uid:${this.uid}">⠿ ${this.elementName}</span>
-              <!-- TODO extract button bar as separate component -->
-              <a class="button" href="${this.editUrl}" @click="${this._openEdit}">
-                <ve-icon name="actions-open"/>
-              </a>
-              ${
-                this.hiddenFieldName ?
-                  html`
-                    <a class="button" @click="${this._toggleHidden}">
-                      <ve-icon name="${toggleIcon}"/>
-                    </a>
-                  ` : ''
-              }
-              <a class="button" @click="${this._delete}">
-                <ve-icon name="actions-delete"/>
-              </a>
-              <a class="button" @click="${this._addAbove}">
-                <ve-icon name="actions-document-add"/>
-              </a>
-            </ve-drag-handle>` : ''
-      }
+    return html`
+      ${this.canModifyRecord ? statusBar : ''}
       <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
       <ve-drop-zone
         table="${this.table}"
@@ -213,7 +219,6 @@ export class VeContentElement extends LitElement {
     .button-bar {
       display: flex;
       gap: 2px;
-      cursor: grab;
       position: absolute;
       bottom: 100%;
       left: -1px;
@@ -230,6 +235,10 @@ export class VeContentElement extends LitElement {
       font-size: 0.8em;
 
       transition: opacity 0.2s;
+    }
+
+    .button-bar[isActive="true"] {
+      cursor: grab;
     }
 
     *:hover ~ .button-bar,

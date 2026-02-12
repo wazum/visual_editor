@@ -9,22 +9,25 @@ export class VeDragHandle extends LitElement {
   static properties = {
     table: {type: String},
     uid: {type: Number},
+    isActive: {type: String},
   };
 
   constructor() {
     super();
 
-    /** @type {HTMLElement} */
-    const element = this;
-    element.setAttribute('draggable', 'true');
-    element.addEventListener('dragstart', this._dragStart.bind(this));
-    element.addEventListener('dragend', this._dragEnd.bind(this));
-
-    element.style.paddingBottom = 'calc(var(--auto-no-overlap-padding, 0px) + 4px)';
   }
 
   firstUpdated(changedProperties) {
     autoNoOverlap(this, 've-drag-handle');
+    if (this.isActive === 'true') {
+      /** @type {HTMLElement} */
+      const element = this;
+      element.setAttribute('draggable', 'true');
+      element.addEventListener('dragstart', this._dragStart.bind(this));
+      element.addEventListener('dragend', this._dragEnd.bind(this));
+
+      element.style.paddingBottom = 'calc(var(--auto-no-overlap-padding, 0px) + 4px)';
+    }
   }
 
   /**
@@ -56,7 +59,7 @@ export class VeDragHandle extends LitElement {
   }
 
   static styles = css`
-    :host {
+    :host([draggable]) {
       cursor: grab;
     }
   `;

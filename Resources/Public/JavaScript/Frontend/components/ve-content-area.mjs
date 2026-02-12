@@ -26,7 +26,7 @@ export class VeContentArea extends LitElement {
   firstUpdated(changedProperties) {
     /** @type {HTMLElement} */
     const element = this;
-    if(element.getAttribute('was')) {
+    if (element.getAttribute('was')) {
       // already processed
       return;
     }
@@ -51,11 +51,11 @@ export class VeContentArea extends LitElement {
     const oldFirstChild = element.firstChild
     let isAfterSelf = false;
     for (const child of Array.from(parent.childNodes)) {
-      if(child === element) {
+      if (child === element) {
         isAfterSelf = true;
         continue;
       }
-      if(isAfterSelf) {
+      if (isAfterSelf) {
         // insert inside element after all children:
         element.appendChild(child);
       } else {
@@ -73,7 +73,7 @@ export class VeContentArea extends LitElement {
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent || 0);
 
     const columnHasChild = [...this.children].filter((element) => element.tagName.toLowerCase() === 've-content-element').length > 0;
-    const label = lll('frontend.addContentElement') + this.columnName;
+    const label = lll('frontend.addContentElement') + ' ' + this.columnName;
     const addButton = html`
       <div class="center">
         <ve-iframe-popup title="${label}" src="${newContentUrl}" type="ajax">
@@ -81,8 +81,9 @@ export class VeContentArea extends LitElement {
           ${label}
         </ve-iframe-popup>
       </div>`;
+    const allowNew = window.veInfo.allowNewContent && !columnHasChild;
     return html`
-      ${(columnHasChild ? '' : addButton)}
+      ${allowNew ? addButton : ''}
       <ve-drop-zone
         table="tt_content"
         target="${this.target}"

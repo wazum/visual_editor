@@ -46,10 +46,15 @@ onMessage('openInMiddleFrame', (href) => {
   window.location = href;
 });
 
-onMessage('pageChanged', (pageId) => {
+onMessage('pageChanged', ({pageId, languageId}) => {
 
   const newUrl = new URL(window.location.href);
   newUrl.searchParams.set('id', pageId);
+  if (languageId) {
+    newUrl.searchParams.set('language', languageId);
+  } else {
+    newUrl.searchParams.delete('language');
+  }
   window.history.pushState(null, '', newUrl);
 
   // set href of refresh button to new URL
@@ -57,6 +62,11 @@ onMessage('pageChanged', (pageId) => {
 
   const newUrlTop = new URL(window.top.location.href);
   newUrlTop.searchParams.set('id', pageId);
+  if (languageId) {
+    newUrlTop.searchParams.set('language', languageId);
+  } else {
+    newUrlTop.searchParams.delete('language');
+  }
   window.top.history.pushState(null, '', newUrlTop);
 
   ModuleStateStorage.update('web', pageId);

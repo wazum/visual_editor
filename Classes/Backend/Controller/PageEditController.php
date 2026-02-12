@@ -383,7 +383,7 @@ final class PageEditController
     {
         $actionMenu = $view->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
         $actionMenu->setIdentifier('languageMenu');
-        $actionMenu->setLabel('HI');
+        $actionMenu->setLabel('Language');
 
         foreach ($this->availableLanguages as $language) {
             $href = (string)$this->uriBuilder->buildUriFromRoute('web_edit', ['id' => $this->pageRecord->getUid(), 'language' => $language->getLanguageId()]);

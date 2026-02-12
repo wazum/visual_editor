@@ -59,7 +59,7 @@ final readonly class ContentElementWrapperService
 
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $data);
         assert($record instanceof Record);
-        $schema = $this->tcaSchema->get($record->getMainType()); // TODO use getFullType (if flux is not used)
+        $schema = $this->tcaSchema->get($record->getFullType());
 
         $hiddenFieldType = $schema->getCapability(TcaSchemaCapability::RestrictionDisabledField);
         $hiddenFieldName = $hiddenFieldType->getFieldName();
@@ -75,14 +75,17 @@ final readonly class ContentElementWrapperService
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-element', $content);
         $tag->addAttribute('elementName', $this->getContentTypeLabel($record));
         $tag->addAttribute('table', $table);
-        $uid = $record->getComputedProperties()->getLocalizedUid() ?: $record->getUid();
+        $uid = $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid();
         $tag->addAttribute('id', $table . ':' . $uid);
-        $tag->addAttribute('uid', (string)($uid));
+        $tag->addAttribute('uid', (string)$uid);
         $tag->addAttribute('pid', (string)$record->getPid());
         $tag->addAttribute('colPos', $record->get('colPos'));
         $tag->addAttribute('hiddenFieldName', $hiddenFieldName);
         if ($canModifyRecord) {
             $tag->addAttribute('canModifyRecord', 'true');
+        }
+        if (!$record->getLanguageInfo()->getTranslationParent()) {
+            $tag->addAttribute('canBeMoved', 'true');
         }
 
         if ($record->getSystemProperties()->isDisabled()) {

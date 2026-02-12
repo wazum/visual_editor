@@ -7,10 +7,12 @@ namespace TYPO3\CMS\VisualEditor\EventListener;
 use B13\Container\Domain\Model\Container;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent as V13RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+use function str_contains;
 
 final readonly class RenderContentAreaEventListener
 {
@@ -34,11 +36,13 @@ final readonly class RenderContentAreaEventListener
         $pageUid = $event->getRequest()->getAttribute('frontend.page.information')->getId();
         $tag->addAttribute('target', $pageUid);
         $tag->addAttribute('colPos', $event->getContentArea()->getColPos());
-        $tag->addAttribute('columnName', $event->getContentArea()->getName());
+        $columnName = $event->getContentArea()->getName();
+        $tag->addAttribute('columnName', str_contains($columnName, ':') ? LocalizationUtility::translate($columnName) : $columnName);
 
         $extContainer = $event->getContentArea()->getConfiguration()['container'] ?? null;
         if ($extContainer instanceof Container) {
-            $tag->addAttribute('tx_container_parent', (string)$extContainer->getUid());// TODO test this (test with sys_language_uid > 1)
+            $localizedUid = $extContainer->getContainerRecord()['_LOCALIZED_UID'] ?? $extContainer->getUidOfLiveWorkspace();
+            $tag->addAttribute('tx_container_parent', (string)$localizedUid);// TODO (test with sys_language_uid > 1)
         }
 
         // Backwards compatibility for TYPO3 13: (TODO remove this in TYPO3 15)

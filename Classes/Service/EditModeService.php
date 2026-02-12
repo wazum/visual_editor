@@ -15,8 +15,9 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
+use TYPO3\CMS\Frontend\Page\PageInformation;
 use function assert;
 use function method_exists;
 
@@ -28,6 +29,7 @@ final readonly class EditModeService
         private PageRenderer $pageRenderer,
         private TcaSchemaFactory $tcaSchema,
         private LanguageServiceFactory $languageServiceFactory,
+        private LanguageModeService $languageModeService,
     )
     {
     }
@@ -61,11 +63,19 @@ final readonly class EditModeService
             assert($request instanceof ServerRequestInterface);
 
             // backend and Frontend Context: determine current page id
-            $pageId = $request->getAttribute('frontend.page.information')?->getId()
-                ?? $request->getAttribute('pageContext')?->pageId;
+            $pageInformation = $request->getAttribute('frontend.page.information');
+            if (!$pageInformation instanceof PageInformation) {
+                throw new RuntimeException('Could not determine current page information');
+            }
+            $pageId = $pageInformation->getId();
 
             if (!$pageId) {
                 throw new RuntimeException('Could not determine current page id', 1768983081);
+            }
+
+            $siteLanguage = $request->getAttribute('language');
+            if (!$siteLanguage instanceof SiteLanguage) {
+                throw new RuntimeException('Could not determine current site language');
             }
 
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
@@ -90,8 +100,10 @@ final readonly class EditModeService
             ]);
             $data = [
                 'pageId' => $pageId,
+                'languageId' => $siteLanguage->getLanguageId(),
                 'newContentUrl' => $newContentUrl,
                 'editContentUrl' => $editContentUrl,
+                'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage),
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
@@ -165,7 +177,7 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
     {
         $file = 'EXT:visual_editor/Resources/Private/Language/locallang.xlf';
         $languageService = $this->languageServiceFactory->create($this->getBackendUserLanguage());
-        foreach($languageService->getLabelsFromResource($file) as $key => $value) {
+        foreach ($languageService->getLabelsFromResource($file) as $key => $value) {
             $this->pageRenderer->addInlineLanguageLabel($key, $value);
         }
     }
