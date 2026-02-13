@@ -15,6 +15,7 @@ use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use function is_array;
+use function is_object;
 use function method_exists;
 
 /**
@@ -93,7 +94,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
             if (is_array($contentArea) && (int)$contentArea['colPos'] === $colPos) {
                 return $this->localizationService->tryTranslation($contentArea['name']);
             }
-            if (method_exists($contentArea, 'getName') && method_exists($contentArea, 'getColPos')) {
+            if (is_object($contentArea) && method_exists($contentArea, 'getName') && method_exists($contentArea, 'getColPos')) {
                 if ($contentArea->getColPos() === $colPos) {
                     return $this->localizationService->tryTranslation($contentArea->getName());
                 }

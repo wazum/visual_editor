@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Schema\Field\InputFieldType;
 use TYPO3\CMS\Core\Schema\Field\TextFieldType;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Fluid\ViewHelpers\Format\HtmlViewHelper;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Core\RichtText\RichTextConfigurationService;
@@ -24,8 +24,10 @@ use TYPO3\CMS\VisualEditor\EditableResult\Input;
 use TYPO3\CMS\VisualEditor\EditableResult\RichText;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
+use TYPO3\CMS\VisualEditor\Service\ModelToRawRecordService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+
 use function get_debug_type;
 use function htmlspecialchars;
 use function is_string;
@@ -47,6 +49,13 @@ use const JSON_THROW_ON_ERROR;
  */
 final class TextViewHelper extends AbstractViewHelper
 {
+    const string RECORD_TYPE = RecordInterface::class . '|' . PageInformation::class . '|' . DomainObjectInterface::class;
+
+    /**
+     * Extbase models have a __toString() method and Fluid calls that if we escape the Children (arguments)
+     */
+    protected $escapeChildren = false;
+
     protected $escapeOutput = false;
 
     public function __construct(
@@ -59,6 +68,7 @@ final class TextViewHelper extends AbstractViewHelper
         private readonly RichtextConfiguration $richtext,
         private readonly Typo3Version $typo3Version,
         private readonly LocalizationService $localizationService,
+        private readonly ModelToRawRecordService $modelToRawRecordService,
     )
     {
     }
@@ -69,7 +79,7 @@ final class TextViewHelper extends AbstractViewHelper
 
         $type = 'object';
         if ($this->typo3Version->getMajorVersion() >= 14) {
-            $type = RecordInterface::class . '|' . PageInformation::class;
+            $type = self::RECORD_TYPE;
         }
         $this->registerArgument('record', $type, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', true);
@@ -91,9 +101,13 @@ final class TextViewHelper extends AbstractViewHelper
             $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $record->getPageRecord());
         }
 
+        if ($record instanceof DomainObjectInterface) {
+            $record = $this->modelToRawRecordService->modelToRawRecord($record);
+        }
+
         if (!$record instanceof RecordInterface) {
             throw new InvalidArgumentException(
-                'The record argument must be an instance of ' . PageInformation::class . ' or ' . RecordInterface::class . '. Given: ' . get_debug_type(
+                'The record argument must be an instance of ' . self::RECORD_TYPE . '. Given: ' . get_debug_type(
                     $record,
                 ), 1770539910,
             );
