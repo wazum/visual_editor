@@ -5,3 +5,8 @@ tt_content.stdWrap.wrapContentElementsWithVeWrapper = 1
 # TODO replace this with something in the core. (to remove the site set)
 # add parameter editMode to every link in edit mode.
 config.linkVars = editMode
+
+# disable admin panel if editMode is set.
+[globalVar = GP:editMode = 1]
+  config.admPanel = 0
+[global]

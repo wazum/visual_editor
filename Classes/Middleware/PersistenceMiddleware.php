@@ -9,14 +9,19 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
+use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
 use function array_keys;
@@ -28,6 +33,8 @@ class PersistenceMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly Context $context,
         private readonly DataHandlerService $dataHandlerService,
+        private readonly UriBuilder $uriBuilder,
+        private readonly ViewFactoryInterface $viewFactory,
     )
     {
     }
@@ -78,7 +85,21 @@ class PersistenceMiddleware implements MiddlewareInterface
         }
 
         if (!$user->isLoggedIn()) {
-            throw new RuntimeException('not logged in', 6454763677);
+            $loginUrl = $this->uriBuilder->buildUriFromRoute('login', referenceType: UriBuilder::ABSOLUTE_URL)->__toString();
+            $view = $this->viewFactory
+                ->create(
+                    new ViewFactoryData(
+                        templatePathAndFilename: 'EXT:visual_editor/Resources/Private/Templates/NotLoggedIn.fluid.html',
+                        request: $request,
+                    ),
+                )
+                ->assign('loginUrl', $loginUrl);
+            throw new ImmediateResponseException(new HtmlResponse($view->render(), 401));
+        }
+
+        $beUser = $GLOBALS['BE_USER'] ?? null;
+        if (!$beUser instanceof BackendUserAuthentication) {
+            throw new UnauthorizedException('No $GLOBALS[\'BE_USER\'] available', 8725323237);
         }
 
         // only do something on POST requests
@@ -93,11 +114,6 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         if ($user->isAdmin()) {
             return MiddlewareAction::Save;
-        }
-
-        $beUser = $GLOBALS['BE_USER'] ?? null;
-        if (!$beUser instanceof BackendUserAuthentication) {
-            throw new UnauthorizedException('No $GLOBALS[\'BE_USER\'] available', 8725323237);
         }
 
         // check permissions of user on page

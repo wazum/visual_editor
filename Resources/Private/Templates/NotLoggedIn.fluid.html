@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Backend login required</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --card: rgba(255,255,255,.08);
+      --card2: rgba(255,255,255,.06);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --faint: rgba(255,255,255,.58);
+      --stroke: rgba(255,255,255,.14);
+      --stroke2: rgba(255,255,255,.10);
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --focus: 0 0 0 4px rgba(255,255,255,.12), 0 0 0 1px rgba(255,255,255,.32) inset;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root{
+        --bg: #f5f7ff;
+        --card: rgba(0,0,0,.04);
+        --card2: rgba(0,0,0,.03);
+        --text: rgba(0,0,0,.88);
+        --muted: rgba(0,0,0,.66);
+        --faint: rgba(0,0,0,.54);
+        --stroke: rgba(0,0,0,.10);
+        --stroke2: rgba(0,0,0,.08);
+        --shadow: 0 18px 60px rgba(22, 25, 40, .14);
+        --focus: 0 0 0 4px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.18) inset;
+      }
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100svh;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(98,135,255,.24), transparent 55%),
+        radial-gradient(900px 500px at 85% 25%, rgba(255,96,206,.18), transparent 55%),
+        radial-gradient(900px 700px at 40% 90%, rgba(78,255,192,.14), transparent 60%),
+        var(--bg);
+      display:grid;
+      place-items:center;
+      padding: 28px;
+    }
+
+    main{
+      width: min(920px, 100%);
+    }
+
+    .wrap{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    header{
+      padding: 26px 26px 18px;
+      border-bottom: 1px solid var(--stroke2);
+      display:flex;
+      gap: 14px;
+      align-items:flex-start;
+    }
+
+    .badge{
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      display:grid;
+      place-items:center;
+    }
+
+    .badge svg{
+      width: 22px;
+      height: 22px;
+      opacity: .9;
+    }
+
+    h1{
+      font-size: 22px;
+      line-height: 1.25;
+      margin:0;
+      letter-spacing: .2px;
+    }
+
+    .sub{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    section{
+      padding: 22px 26px;
+    }
+
+    p{margin: 0 0 12px}
+    .hint{color: var(--muted); font-size: 14px; line-height: 1.6}
+    .steps{margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.7}
+    .steps strong{color: var(--text)}
+    .code{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 7px;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      vertical-align: baseline;
+      color: var(--text);
+      opacity: .95;
+      white-space: nowrap;
+    }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-top: 14px;
+    }
+
+    .btn{
+      appearance:none;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 14px;
+      text-decoration:none;
+      display:inline-flex;
+      gap: 10px;
+      align-items:center;
+      font-weight: 600;
+      font-size: 14px;
+      cursor:pointer;
+      transition: transform .08s ease, background .12s ease, border-color .12s ease;
+    }
+
+    .btn:hover{ background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.20); }
+    .btn:active{ transform: translateY(1px); }
+    .btn:focus-visible{ outline:none; box-shadow: var(--focus); }
+
+    .btn.primary{
+      background: rgba(98,135,255,.22);
+      border-color: rgba(98,135,255,.38);
+    }
+    .btn.primary:hover{
+      background: rgba(98,135,255,.28);
+      border-color: rgba(98,135,255,.52);
+    }
+
+    .btn svg{ width: 16px; height: 16px; opacity: .95 }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 18px;
+      align-items:start;
+    }
+
+    @media (max-width: 840px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius2);
+      padding: 16px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .panel h2{
+      margin: 0 0 8px;
+      font-size: 15px;
+      letter-spacing: .2px;
+    }
+
+    .panel a{ color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .panel a:hover{ opacity: .92; }
+
+    details{
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius2);
+      padding: 14px 14px 10px;
+      background: rgba(255,255,255,.03);
+    }
+
+    details + details{ margin-top: 12px; }
+
+    summary{
+      cursor:pointer;
+      user-select:none;
+      font-weight: 700;
+      font-size: 14px;
+      list-style:none;
+    }
+    summary::-webkit-details-marker{ display:none; }
+
+    .details-body{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    footer{
+      padding: 16px 26px 22px;
+      border-top: 1px solid var(--stroke2);
+      color: var(--faint);
+      font-size: 12.5px;
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .domain{
+      font-family: var(--mono);
+      opacity: .92;
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <div class="wrap" role="region" aria-label="Backend login required">
+    <header>
+      <div class="badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2.5c3.8 0 7 3.2 7 7v3.2c0 .4.2.8.5 1.1l1 1a1.5 1.5 0 0 1-1.1 2.6H4.6a1.5 1.5 0 0 1-1.1-2.6l1-1c.3-.3.5-.7.5-1.1V9.5c0-3.8 3.2-7 7-7Z" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M9.2 19.3a3 3 0 0 0 5.6 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>You’re not logged in on this domain</h1>
+        <div class="sub">
+          To use the visual editor, you need an active TYPO3 backend session for <span class="domain" id="domain">this site</span>.
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div>
+        <p class="hint">
+          Open the backend login in a new tab, sign in, then come back and reload this page.
+        </p>
+
+        <div class="steps" aria-label="Steps">
+          <div><strong>1)</strong> Click <span class="code">Go to login</span></div>
+          <div><strong>2)</strong> Log in to the TYPO3 backend (HTTPS recommended)</div>
+          <div><strong>3)</strong> Return here and click <span class="code">Reload</span></div>
+        </div>
+
+        <div class="actions">
+          <a class="btn primary" href="{loginUrl}" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M14 3h7v7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M21 3 10 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M20 14v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            Go to login
+          </a>
+
+          <button class="btn" type="button" onclick="window.location.reload()">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.2-5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M20 4v6h-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            Reload
+          </button>
+        </div>
+      </div>
+
+      <aside class="panel" aria-label="Multisite note">
+        <h2>Using multiple domains?</h2>
+        <p class="hint" style="margin-bottom:10px">
+          You can skip the “login per domain” dance by using
+          <a href="https://extensions.typo3.org/extension/multisite_belogin" target="_blank" rel="noopener noreferrer">
+            EXT:multisite_belogin
+          </a>
+          (cross site/domain backend login).
+        </p>
+        <p class="hint" style="margin:0">
+          It’s especially handy when editors use backend tools in the frontend (preview / editing overlays) across domains.
+        </p>
+      </aside>
+    </section>
+
+    <section aria-label="Help and troubleshooting">
+      <details>
+        <summary>Why am I seeing this?</summary>
+        <div class="details-body">
+          Backend login is stored in browser cookies. If you’re logged in on a different domain (or a different protocol like HTTP vs HTTPS),
+          this domain may not have the cookie it needs—so the visual editor can’t verify your session.
+        </div>
+      </details>
+
+      <details>
+        <summary>Troubleshooting tips</summary>
+        <div class="details-body">
+          <div style="margin-bottom:8px">
+            • Clear browser cookies/cache for this site and try again (old cookies can block a fresh login).<br/>
+            • Try another browser or a private window to rule out cookie conflicts.<br/>
+            • Ensure the backend login is done via <strong>HTTPS</strong> on the correct domain.
+          </div>
+          <div>
+            If you still bounce back to the login page or sessions don’t stick, the issue is often cookie configuration or caching on the server side.
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Admin notes for EXT:multisite_belogin</summary>
+        <div class="details-body">
+          The extension is intended for cross site/domain backend login. Typical requirements include setting cookie SameSite appropriately
+          (often <span class="code">cookieSameSite = none</span>), using full qualified domain names (FQDN) for site bases, and logging in via HTTPS.
+        </div>
+      </details>
+    </section>
+
+    <footer>
+      <div>
+        Not your session? Use another browser profile, or log out in the backend and log in again.
+      </div>
+      <div class="domain" id="domain2"></div>
+    </footer>
+  </div>
+</main>
+
+<script>
+  (function () {
+    // Show current hostname in a friendly way (no backend logic, just UI polish).
+    var host = window.location.hostname || "this site";
+    var el1 = document.getElementById("domain");
+    var el2 = document.getElementById("domain2");
+    if (el1) el1.textContent = host;
+    if (el2) el2.textContent = "Domain: " + host;
+  })();
+</script>
+</body>
+</html>
