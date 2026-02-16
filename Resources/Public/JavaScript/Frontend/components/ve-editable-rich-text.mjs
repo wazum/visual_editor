@@ -36,9 +36,9 @@ export class VeEditableRichText extends LitElement {
     dataHandlerStore.addEventListener('change', () => {
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
       const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-      if (storedValue !== this.editor.getData()) {
+      if (storedValue?.trim() !== this.editor?.getData()?.trim()) {
         this.value = storedValue ?? this.value;
-        this.editor.setData(this.value);
+        this.editor?.setData(this.value);
       }
     })
     this.showEmpty = showEmptyActive.get();

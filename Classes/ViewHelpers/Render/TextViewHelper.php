@@ -125,8 +125,14 @@ final class TextViewHelper extends AbstractViewHelper
 
         $canEdit = $this->editModeService->canEditField($record, $field);
 
-        $fieldSchema = $this->tcaSchema->get($record->getFullType())->getField($field);
+        $schema = $this->tcaSchema->get($record->getFullType());
+        $tableLabel = $schema->getTitle($this->localizationService->tryTranslation(...));
+
+        $fieldSchema = $schema->getField($field);
         $label = $this->localizationService->tryTranslation($fieldSchema->getLabel());
+
+        $label = $tableLabel . ': ' . $label;
+
         if ($fieldSchema instanceof InputFieldType) {
             return $this->renderInput($value, $record, $fieldSchema, $label, $canEdit);
         }

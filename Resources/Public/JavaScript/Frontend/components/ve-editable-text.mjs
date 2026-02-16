@@ -47,9 +47,12 @@ export class VeEditableText extends LitElement {
       this.changed = dataHandlerStore.hasChangedData(this.table, this.uid, this.field);
       this.valueInitial = dataHandlerStore.initialData[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
       const storedValue = dataHandlerStore.data[this.table]?.[this.uid]?.[this.field] ?? this.valueInitial;
-      if (storedValue !== this.shadowRoot.querySelector('.slot').innerText) {
+      const slot = this.shadowRoot?.querySelector('.slot');
+      if (storedValue?.trim() !== slot?.innerText?.trim()) {
         this.value = storedValue ?? this.value;
-        this.shadowRoot.querySelector('.slot').innerText = this.value;
+        if (slot) {
+          slot.innerText = this.value;
+        }
       }
     })
   }
@@ -131,9 +134,16 @@ export class VeEditableText extends LitElement {
   }
 
   shouldBeInline() {
-    const parentIsInline = getComputedStyle(this.parentElement).display.startsWith('inline');
+    const parentStyle = getComputedStyle(this.parentElement);
+    const parentIsInline = parentStyle.display.startsWith('inline');
     if (parentIsInline) {
       return true;
+    }
+
+    // if parent is display: flex + flex-direction: column, we need to be block
+    const parentIsFlexColumn = parentStyle.display === 'flex' && parentStyle.flexDirection === 'column';
+    if (parentIsFlexColumn) {
+      return false;
     }
 
     let childNodes = [...this.parentElement.childNodes].filter((node) => {
