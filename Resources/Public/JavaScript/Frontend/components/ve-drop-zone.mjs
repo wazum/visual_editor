@@ -107,6 +107,8 @@ export class VeDropZone extends LitElement {
     if (isVEDrag) {
       event.preventDefault();
     }
+    event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
+
     this.isDragHovering = true;
     // fallback timeout to reset the hovering state
     this.dragOverTimeout && clearTimeout(this.dragOverTimeout);
@@ -153,7 +155,6 @@ export class VeDropZone extends LitElement {
       },
     };
 
-    // event.dataTransfer.dropEffect is sometimes 'none' in Chromium
     if (event.dataTransfer.dropEffect === 'copy') {
       // For copy we ask the user and if confirmed we do an immediate call useDataHandler
       // if not, we do nothing
