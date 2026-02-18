@@ -149,17 +149,17 @@ export class VeContentElement extends LitElement {
         ${
           this.hiddenFieldName ?
             html`
-              <a class="button" @click="${this._toggleHidden}">
+              <a class="button" tabindex="0" @click="${this._toggleHidden}">
                 <ve-icon name="${toggleIcon}"/>
               </a>
             ` : ''
         }
-        <a class="button" @click="${this._delete}">
+        <a class="button" tabindex="0" @click="${this._delete}">
           <ve-icon name="actions-delete"/>
         </a>
         ${
           window.veInfo.allowNewContent ? html`
-            <a class="button" @click="${this._addAbove}">
+            <a class="button" tabindex="0" @click="${this._addAbove}">
               <ve-icon name="actions-document-add"/>
             </a>
           ` : ''
