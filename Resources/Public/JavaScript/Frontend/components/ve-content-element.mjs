@@ -188,6 +188,8 @@ export class VeContentElement extends LitElement {
     :host {
       display: block;
       position: relative;
+      /* reset overflow as this breaks the drag handle */
+      overflow: initial !important;
     }
 
     .border {
