@@ -6,13 +6,13 @@ namespace TYPO3\CMS\VisualEditor\ViewHelpers\Mark;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Page\ContentAreaCollection;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
-use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 use function is_array;
@@ -46,7 +46,8 @@ final class ContentAreaViewHelper extends AbstractViewHelper
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly EditModeService $editModeService,
-        private readonly LocalizationService $localizationService
+        private readonly LocalizationService $localizationService,
+        private readonly Typo3Version $typo3Version,
     ) {
     }
 
@@ -91,20 +92,19 @@ final class ContentAreaViewHelper extends AbstractViewHelper
             return (string)$colPos; // TODO find name from container extension
         }
 
-        /**
-         * @var PageInformation $pageInformation
-         */
+        /** @var PageInformation $pageInformation */
         $pageInformation = $request->getAttribute('frontend.page.information');
         foreach ($pageInformation->getPageLayout()->getContentAreas() as $contentArea) {
-            if (is_array($contentArea) && (int)$contentArea['colPos'] === $colPos) {
-                return $this->localizationService->tryTranslation($contentArea['name']);
+            if ($this->typo3Version->getMajorVersion() >= 14) {
+                $contentAreaColPos = $contentArea->getColPos();
+                $name = $contentArea->getName();
+            } else {
+                $contentAreaColPos = (int)$contentArea['colPos'];
+                $name = $contentArea['name'];
             }
 
-            if (is_object($contentArea) && method_exists($contentArea, 'getName') && method_exists($contentArea, 'getColPos')) {
-                $contentAreaColPos = $contentArea->getColPos();
-                if ($contentAreaColPos === $colPos) {
-                    return $this->localizationService->tryTranslation($contentArea->getName());
-                }
+            if ($contentAreaColPos === $colPos) {
+                return $this->localizationService->tryTranslation($name);
             }
         }
 

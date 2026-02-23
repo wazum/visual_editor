@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TYPO3\CMS\VisualEditor\Service;
 
 use InvalidArgumentException;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\ContentAreaCollection;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
@@ -22,7 +23,7 @@ use function method_exists;
 
 final readonly class LanguageModeService
 {
-    public function __construct(private PageContentFetchingProcessor $pageContentFetchingProcessor)
+    public function __construct(private PageContentFetchingProcessor $pageContentFetchingProcessor, private Typo3Version $typo3Version)
     {
     }
 
@@ -35,10 +36,8 @@ final readonly class LanguageModeService
         $isConnectedMode = false;
         $isFreeMode = false;
 
-        /** @var ContentAreaCollection|array $contentAreas */
-        $contentAreas = $pageInformation->getPageLayout()->getContentAreas();
-        if (is_object($contentAreas) && method_exists($contentAreas, 'getGroupedRecords')) {
-            $groupedRecords = $contentAreas->getGroupedRecords();
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            $groupedRecords = $pageInformation->getPageLayout()->getContentAreas()->getGroupedRecords();
         } else {
             $groupedRecords = $this->getGroupedRecordsTYPO3v13($pageInformation->getPageRecord());
         }

@@ -69,7 +69,7 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         $this->dataHandlerService->run($data, []);
 
-        foreach($cmdArray as $cmd) {
+        foreach ($cmdArray as $cmd) {
             $this->dataHandlerService->run([], $cmd);
         }
 
@@ -86,9 +86,6 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         // backend user required
         $user = $this->context->getAspect('backend.user');
-        if (!$user instanceof UserAspect) {
-            throw new RuntimeException('UserAspect not set in context', 1552066121);
-        }
 
         if (!$user->isLoggedIn()) {
             $loginUrl = $this->uriBuilder->buildUriFromRoute('login', referenceType: UriBuilder::ABSOLUTE_URL)->__toString();

@@ -1,5 +1,6 @@
 <?php
 
+/** @var string $_EXTKEY */
 $EM_CONF[$_EXTKEY] = [
     'title' => 'TYPO3 CMS Visual Editor',
     'description' => 'brings a modern WYSIWYG editing experience to TYPO3 CMS.',

@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Service;
 
-use InvalidArgumentException;
-use Exception;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
 use function assert;
@@ -31,7 +26,6 @@ final readonly class ContentElementWrapperService
         private RecordFactory $recordFactory,
         private EditModeService $editModeService,
         private TcaSchemaFactory $tcaSchema,
-        private UriBuilder $backendUriBuilder,
         private LocalizationService $localizationService,
     ) {
     }
