@@ -135,10 +135,10 @@ OR you can use [EXT:multisite_belogin](https://extensions.typo3.org/extension/mu
 
 This extension is licensed under the [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
 
-# with ♥️ from anders und sehr GmbH
+# with ♥️ from ![anders und sehr logo](https://www.andersundsehr.com/logo-claim/anders-und-sehr-logo_350px.svg)
 
 > If something did not work 😮  
 > or you appreciate this Extension 🥰 let us know.
 
-> We are always looking for great people to join our team!
+> We are always looking for great people to join our team!  
 > https://www.andersundsehr.com/karriere/
