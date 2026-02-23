@@ -53,8 +53,9 @@ class PersistenceMiddleware implements MiddlewareInterface
     {
         $token = $request->getHeaderLine('X-Request-Token');
         if (!$token || !$this->formProtectionFactory->createForType('backend')->validateToken($token, 'visual_editor', 'save')) {
-            throw new UnauthorizedException('Invalid or missing request token');
+            throw new UnauthorizedException('Invalid or missing request token', 8148623595);
         }
+
         $input = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         $data = $input['data'] ?? [];
@@ -95,7 +96,7 @@ class PersistenceMiddleware implements MiddlewareInterface
                     ),
                 )
                 ->assign('loginUrl', $loginUrl);
-            throw new ImmediateResponseException(new HtmlResponse($view->render(), 401));
+            throw new ImmediateResponseException(new HtmlResponse($view->render(), 401), 3476089111);
         }
 
         $beUser = $GLOBALS['BE_USER'] ?? null;

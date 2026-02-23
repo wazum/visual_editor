@@ -79,6 +79,7 @@ final readonly class ContentElementWrapperService
         $tag->addAttribute('elementName', $this->getContentTypeLabel($record));
         $tag->addAttribute('CType', $record->get('CType'));
         $tag->addAttribute('table', $table);
+
         $uid = $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid();
         $tag->addAttribute('id', $table . ':' . $uid);
         $tag->addAttribute('uid', (string)$uid);
@@ -88,6 +89,7 @@ final readonly class ContentElementWrapperService
         if ($canModifyRecord) {
             $tag->addAttribute('canModifyRecord', 'true');
         }
+
         if (!$record->getLanguageInfo()->getTranslationParent()) {
             $tag->addAttribute('canBeMoved', 'true');
         }

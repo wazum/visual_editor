@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Service;
 
+use InvalidArgumentException;
+use TYPO3\CMS\Core\Page\ContentAreaCollection;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Domain\Record;
@@ -33,6 +35,7 @@ final readonly class LanguageModeService
         $isConnectedMode = false;
         $isFreeMode = false;
 
+        /** @var ContentAreaCollection|array $contentAreas */
         $contentAreas = $pageInformation->getPageLayout()->getContentAreas();
         if (is_object($contentAreas) && method_exists($contentAreas, 'getGroupedRecords')) {
             $groupedRecords = $contentAreas->getGroupedRecords();
@@ -43,12 +46,14 @@ final readonly class LanguageModeService
         foreach ($groupedRecords as $contentArea) {
             foreach ($contentArea['records'] as $record) {
                 if (!$record instanceof Record) {
-                    throw new \InvalidArgumentException('Record array must implement ' . Record::class);
+                    throw new InvalidArgumentException('Record array must implement ' . Record::class, 1321851682);
                 }
+
                 if ($record->getPid() !== $pageInformation->getId()) {
                     // skip records that are from slideMode
                     continue;
                 }
+
                 if ($record->getLanguageInfo()->getTranslationParent()) {
                     $isConnectedMode = true;
                 } else {
@@ -56,15 +61,19 @@ final readonly class LanguageModeService
                 }
             }
         }
+
         if ($isConnectedMode && $isFreeMode) {
             return LanguageMode::Mixed;
         }
+
         if ($isConnectedMode) {
             return LanguageMode::Connected;
         }
+
         if ($isFreeMode) {
             return LanguageMode::Free;
         }
+
         return LanguageMode::Connected;
     }
 
@@ -76,13 +85,15 @@ final readonly class LanguageModeService
         if ($language->getLanguageId() === 0) {
             return true;
         }
+
         $pageTsConfig = BackendUtility::getPagesTSconfig($pageInformation->getId());
         $allowInconsistentLanguageHandling = (bool)($pageTsConfig['mod.']['web_layout.']['allowInconsistentLanguageHandling'] ?? false);
-        $langaugeMode = $this->getBackendLanguageMode($pageInformation);
-        if (!$allowInconsistentLanguageHandling && $langaugeMode === LanguageMode::Connected) {
-            return false;
+        $languageMode = $this->getBackendLanguageMode($pageInformation);
+        if ($allowInconsistentLanguageHandling) {
+            return true;
         }
-        return true;
+
+        return $languageMode !== LanguageMode::Connected;
     }
 
     /**

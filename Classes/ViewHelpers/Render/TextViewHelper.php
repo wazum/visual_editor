@@ -81,6 +81,7 @@ final class TextViewHelper extends AbstractViewHelper
         if ($this->typo3Version->getMajorVersion() >= 14) {
             $type = self::RECORD_TYPE;
         }
+
         $this->registerArgument('record', $type, 'A Record API Object (field is also needed)');
         $this->registerArgument('field', 'string', 'the field that should be rendered', true);
     }

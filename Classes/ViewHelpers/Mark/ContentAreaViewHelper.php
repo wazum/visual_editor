@@ -60,6 +60,8 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
     public function render(): string
     {
+        $this->editModeService->init();
+
         $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
 
         $additionalArguments = $this->arguments;
@@ -97,12 +99,15 @@ final class ContentAreaViewHelper extends AbstractViewHelper
             if (is_array($contentArea) && (int)$contentArea['colPos'] === $colPos) {
                 return $this->localizationService->tryTranslation($contentArea['name']);
             }
+
             if (is_object($contentArea) && method_exists($contentArea, 'getName') && method_exists($contentArea, 'getColPos')) {
-                if ($contentArea->getColPos() === $colPos) {
+                $contentAreaColPos = $contentArea->getColPos();
+                if ($contentAreaColPos === $colPos) {
                     return $this->localizationService->tryTranslation($contentArea->getName());
                 }
             }
         }
+
         return (string)$colPos;
     }
 }

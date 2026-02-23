@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Service;
 
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Localization\Locale;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
@@ -15,7 +16,7 @@ final readonly class LocalizationService
 
         try {
             return LocalizationUtility::translate($label, arguments: $arguments, languageKey: $languageKey);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
             return $label;
         }
     }
@@ -26,6 +27,7 @@ final readonly class LocalizationService
         if ($backendUserAuthentication?->user['lang'] !== null) {
             return $backendUserAuthentication->user['lang'];
         }
+
         return null;
     }
 }

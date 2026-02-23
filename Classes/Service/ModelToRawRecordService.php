@@ -46,10 +46,12 @@ final readonly class ModelToRawRecordService
             if (!$columnName) {
                 continue;
             }
+
             // for now we only support scalar values
             if (!in_array(get_debug_type($value), ['null', 'bool', 'int', 'float', 'string'], true)) {
                 continue;
             }
+
             $row[$columnName] = $value;
         }
 

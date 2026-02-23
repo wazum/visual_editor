@@ -41,6 +41,7 @@ final readonly class RenderContentAreaEventListener
         $tag->addAttribute('colPos', $event->getContentArea()->getColPos());
         $tag->addAttribute('allowedContentTypes', implode(',', $event->getContentArea()->getAllowedContentTypes()));
         $tag->addAttribute('disallowedContentTypes', implode(',', $event->getContentArea()->getDisallowedContentTypes()));
+
         $columnName = $event->getContentArea()->getName();
         $tag->addAttribute('columnName', $this->localizationService->tryTranslation($columnName));
 

@@ -63,7 +63,7 @@ final readonly class EditModeService
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
         $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
 
-        $this->loadLangaugeLabelsInline();
+        $this->loadLanguageLabelsInline();
 
         if (!$this->assetCollector->hasInlineJavaScript('veLangInfo')) {
             $request = $GLOBALS['TYPO3_REQUEST'];
@@ -72,8 +72,9 @@ final readonly class EditModeService
             // backend and Frontend Context: determine current page id
             $pageInformation = $request->getAttribute('frontend.page.information');
             if (!$pageInformation instanceof PageInformation) {
-                throw new RuntimeException('Could not determine current page information');
+                throw new RuntimeException('Could not determine current page information', 9965439961);
             }
+
             $pageId = $pageInformation->getId();
 
             if (!$pageId) {
@@ -82,7 +83,7 @@ final readonly class EditModeService
 
             $siteLanguage = $request->getAttribute('language');
             if (!$siteLanguage instanceof SiteLanguage) {
-                throw new RuntimeException('Could not determine current site language');
+                throw new RuntimeException('Could not determine current site language', 3305745963);
             }
 
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
@@ -145,8 +146,9 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         /** @var BackendUserAuthentication $beUser */
         $beUser = $GLOBALS['BE_USER'];
         if ($record instanceof Record || method_exists($record, 'getLanguageId')) {
+            $languageId = $record->getLanguageId();
             // it is not that bad if we can not check the language access, on save there might be an error message. (better than always throwing an error.
-            if (!$beUser->checkLanguageAccess($record->getLanguageId())) {
+            if (!$beUser->checkLanguageAccess($languageId)) {
                 return false; // no access to this language
             }
         }
@@ -181,7 +183,7 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
         return ($GLOBALS['BE_USER'] ?? null) instanceof BackendUserAuthentication;
     }
 
-    private function loadLangaugeLabelsInline(): void
+    private function loadLanguageLabelsInline(): void
     {
         $file = 'EXT:visual_editor/Resources/Private/Language/locallang.xlf';
         $languageService = $this->languageServiceFactory->create($this->localizationService->getBackendUserLanguage());
