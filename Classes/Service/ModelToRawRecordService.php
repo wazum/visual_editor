@@ -8,12 +8,12 @@ use TYPO3\CMS\Core\Domain\RawRecord;
 use TYPO3\CMS\Core\Domain\RecordFactory;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapFactory;
+
 use function get_debug_type;
 use function in_array;
 
 final readonly class ModelToRawRecordService
 {
-
     public function __construct(
         private RecordFactory $recordFactory,
         private DataMapFactory $dataMapFactory,

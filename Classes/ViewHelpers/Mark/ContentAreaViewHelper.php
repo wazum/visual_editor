@@ -14,6 +14,7 @@ use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3\CMS\VisualEditor\ViewHelpers\Render\TextViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+
 use function is_array;
 use function is_object;
 use function method_exists;
@@ -42,9 +43,11 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 {
     protected $escapeOutput = false;
 
-    public function __construct(private readonly EventDispatcherInterface $eventDispatcher, private readonly EditModeService $editModeService,
-        private readonly LocalizationService $localizationService)
-    {
+    public function __construct(
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EditModeService $editModeService,
+        private readonly LocalizationService $localizationService
+    ) {
     }
 
     public function initializeArguments(): void

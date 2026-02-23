@@ -34,6 +34,7 @@ use function is_string;
 use function json_encode;
 use function nl2br;
 use function str_replace;
+
 use const JSON_PRETTY_PRINT;
 use const JSON_THROW_ON_ERROR;
 
@@ -69,8 +70,7 @@ final class TextViewHelper extends AbstractViewHelper
         private readonly Typo3Version $typo3Version,
         private readonly LocalizationService $localizationService,
         private readonly ModelToRawRecordService $modelToRawRecordService,
-    )
-    {
+    ) {
     }
 
     public function initializeArguments(): void
@@ -109,7 +109,8 @@ final class TextViewHelper extends AbstractViewHelper
             throw new InvalidArgumentException(
                 'The record argument must be an instance of ' . self::RECORD_TYPE . '. Given: ' . get_debug_type(
                     $record,
-                ), 1770539910,
+                ),
+                1770539910,
             );
         }
 
@@ -149,13 +150,14 @@ final class TextViewHelper extends AbstractViewHelper
         throw new InvalidArgumentException('The field "' . $table . '.' . $field . '" is not supported. Given: ' . get_debug_type($fieldSchema), 1770618219);
     }
 
-    private function renderInput(string $value,
+    private function renderInput(
+        string $value,
         RecordInterface $record,
         InputFieldType|TextFieldType $field,
         string $label,
         bool $editMode,
-        bool $allowNewlines = false): Input
-    {
+        bool $allowNewlines = false
+    ): Input {
         $html = htmlspecialchars($value);
         if ($allowNewlines) {
             $html = nl2br(htmlspecialchars(str_replace('<br>', "\n", $value)));

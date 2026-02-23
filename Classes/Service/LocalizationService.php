@@ -9,7 +9,6 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 final readonly class LocalizationService
 {
-
     public function tryTranslation(string $label, ?array $arguments = null, Locale|string|null $languageKey = null): string
     {
         $languageKey ??=  $this->getBackendUserLanguage();

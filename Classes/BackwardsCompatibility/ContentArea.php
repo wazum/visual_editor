@@ -13,8 +13,7 @@ final readonly class ContentArea
         private int $colPos,
         private string $name,
         private int $tx_container_parent,
-    )
-    {
+    ) {
     }
 
     public function getColPos(): int

@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
+
 use function array_keys;
 use function implode;
 use function json_decode;
@@ -36,8 +37,7 @@ class PersistenceMiddleware implements MiddlewareInterface
         private readonly UriBuilder $uriBuilder,
         private readonly ViewFactoryInterface $viewFactory,
         private readonly FormProtectionFactory $formProtectionFactory,
-    )
-    {
+    ) {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

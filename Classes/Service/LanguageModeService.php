@@ -13,6 +13,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\DataProcessing\PageContentFetchingProcessor;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Enum\LanguageMode;
+
 use function assert;
 use function is_object;
 use function method_exists;

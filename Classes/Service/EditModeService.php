@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
+
 use function assert;
 use function method_exists;
 
@@ -37,8 +38,7 @@ final readonly class EditModeService
         private LanguageModeService $languageModeService,
         private LocalizationService $localizationService,
         private FormProtectionFactory $formProtectionFactory,
-    )
-    {
+    ) {
     }
 
     public function isEditMode(): bool
@@ -189,5 +189,4 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
             $this->pageRenderer->addInlineLanguageLabel($key, $value);
         }
     }
-
 }

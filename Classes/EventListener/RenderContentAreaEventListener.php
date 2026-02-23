@@ -13,6 +13,7 @@ use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent a
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
+
 use function str_contains;
 
 final readonly class RenderContentAreaEventListener

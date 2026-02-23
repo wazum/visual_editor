@@ -81,22 +81,23 @@ final class PageEditController
         private readonly PolicyRegistry $policyRegistry,
         private readonly Typo3Version $typo3Version,
         private readonly ConnectionPool $connectionPool,
-    )
-    {
+    ) {
     }
 
     private function initialize(ServerRequestInterface $request): void
     {
         $backendUser = $this->getBackendUser();
         $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException(
-            'Missing "id" query parameter', 8412770259,
+            'Missing "id" query parameter',
+            8412770259,
         ));
         $this->moduleData = $request->getAttribute('moduleData');
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
             throw new InvalidArgumentException(
-                'Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0), 4884897021,
+                'Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0),
+                4884897021,
             );
         }
 
