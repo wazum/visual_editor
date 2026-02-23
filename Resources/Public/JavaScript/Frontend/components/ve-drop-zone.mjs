@@ -178,8 +178,8 @@ export class VeDropZone extends LitElement {
         return;
       }
 
-      dataHandlerStore.setCmd(data.table, data.uid, 'copy', actionData);
-      await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmd);
+      dataHandlerStore.addCmd(data.table, data.uid, 'copy', actionData);
+      await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
       dataHandlerStore.markSaved();
 
       if (isDirectMode) {
@@ -190,7 +190,7 @@ export class VeDropZone extends LitElement {
       return;
     }
 
-    dataHandlerStore.setCmd(data.table, data.uid, 'move', actionData);
+    dataHandlerStore.addCmd(data.table, data.uid, 'move', actionData);
 
 
     this.isDragHovering = false; // reset

@@ -54,7 +54,7 @@ export class VeContentElement extends LitElement {
   }
 
   async _delete() {
-    dataHandlerStore.setCmd(this.table, this.uid, 'delete', 1);
+    dataHandlerStore.addCmd(this.table, this.uid, 'delete', 1);
     this.remove();
   }
 

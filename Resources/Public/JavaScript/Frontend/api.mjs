@@ -1,18 +1,18 @@
 /**
  * @typedef {Record<string, Record<number, Record<string, boolean|number|string>>>} Data
- * @typedef {Record<string, Record<number, Record<'move'|'copy'|'delete', any>>>} Cmd
+ * @typedef {Record<string, Record<number, Record<'move'|'copy'|'delete', any>>>}Cmd
  * @param {Data} data
- * @param {Cmd} cmd
+ * @param {Cmd[]} cmdArray
  * @returns {Promise<void>}
  */
-export async function useDataHandler(data = {}, cmd = {}) {
+export async function useDataHandler(data = {}, cmdArray = []) {
   const response = await fetch(window.location.href, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Request-Token': window.veInfo.token,
     },
-    body: JSON.stringify({data, cmd}, null, 2),
+    body: JSON.stringify({data, cmdArray}, null, 2),
   });
   if (!response.ok) {
     document.body.innerHTML = await response.text();

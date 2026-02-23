@@ -60,14 +60,18 @@ class PersistenceMiddleware implements MiddlewareInterface
 
         $data = $input['data'] ?? [];
         unset($input['data']);
-        $cmd = $input['cmd'] ?? [];
-        unset($input['cmd']);
+        $cmdArray = $input['cmdArray'] ?? [];
+        unset($input['cmdArray']);
 
         if (!empty($input)) {
-            throw new RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmd are allowed', 8110225095);
+            throw new RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmdArray are allowed', 8110225095);
         }
 
-        $this->dataHandlerService->run($data, $cmd);
+        $this->dataHandlerService->run($data, []);
+
+        foreach($cmdArray as $cmd) {
+            $this->dataHandlerService->run([], $cmd);
+        }
 
         return new JsonResponse(['success' => true]);
     }

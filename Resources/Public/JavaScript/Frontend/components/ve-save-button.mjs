@@ -19,7 +19,7 @@ export class VeSaveButton extends LitElement {
     this.count = 0;
     sendMessage('updateChangesCount', this.count);
 
-    dataHandlerStore.addEventListener('change', e => {
+    dataHandlerStore.addEventListener('change', () => {
       sendMessage('change', dataHandlerStore.changesCount);
       if (dataHandlerStore.changesCount === this.count) {
         return;
@@ -60,8 +60,8 @@ export class VeSaveButton extends LitElement {
     this.saving = true;
     sendMessage('onSave');
 
-    const updatePageTree = dataHandlerStore.data['pages'] || dataHandlerStore.cmd['pages'];
-    await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmd);
+    const updatePageTree = dataHandlerStore.hasChangesIn('pages');
+    await useDataHandler(dataHandlerStore.data, dataHandlerStore.cmdArray);
 
     // worked, so we mark changes as saved
     dataHandlerStore.markSaved();

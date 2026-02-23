@@ -7,7 +7,7 @@ class DataHandlerStore extends EventTarget {
 
   #data = {};
   #initialData = {};
-  #cmd = {};
+  #cmdArray = [];
   #oldDetail = {};
 
   constructor() {
@@ -28,8 +28,8 @@ class DataHandlerStore extends EventTarget {
     return structuredClone(this.#initialData);
   }
 
-  get cmd() {
-    return structuredClone(this.#cmd);
+  get cmdArray() {
+    return structuredClone(this.#cmdArray);
   }
 
 
@@ -72,10 +72,14 @@ class DataHandlerStore extends EventTarget {
    * @param {any} value
    * @return {void}
    */
-  setCmd(table, uid, action, value) {
-    this.#cmd[table] = this.#cmd[table] || {};
-    this.#cmd[table][uid] = this.#cmd[table][uid] || {};
-    this.#cmd[table][uid][action] = value;
+  addCmd(table, uid, action, value) {
+    this.#cmdArray.push({
+      [table]: {
+        [uid]: {
+          [action]: value,
+        },
+      },
+    });
     this.updateAndNotify();
   }
 
@@ -90,24 +94,24 @@ class DataHandlerStore extends EventTarget {
     }
 
     this.#data = {};
-    this.#cmd = {};
+    this.#cmdArray = [];
     this.updateAndNotify();
     // send change event as updateAndNotify skips it when there are "no changes"
-    this.dispatchEvent(new CustomEvent('change', {detail: {data: this.data, cmd: this.cmd}}));
+    this.dispatchEvent(new CustomEvent('change'));
   }
 
   updateAndNotify() {
     // remove everything from #data that is equal to initialData
     this.#removeStaleData();
 
-    const detail = {data: this.data, cmd: this.cmd};
+    const detail = {data: this.data, cmd: this.cmdArray};
 
     const oldDetail = this.#oldDetail;
     this.#oldDetail = detail;
     if (JSON.stringify(oldDetail) === JSON.stringify(detail)) {
       return;
     }
-    this.dispatchEvent(new CustomEvent('change', {detail}));
+    this.dispatchEvent(new CustomEvent('change'));
   }
 
   #removeStaleData() {
@@ -141,16 +145,18 @@ class DataHandlerStore extends EventTarget {
   }
 
   getCmdChanges() {
-    // count all actions in cmd
-    let count = 0;
-    for (const table in this.#cmd) {
-      for (const uid in this.#cmd[table]) {
-        for (const action in this.#cmd[table][uid]) {
-          count++;
-        }
-      }
+    return this.#cmdArray.length;
+  }
+
+  /**
+   * @param {string} table
+   * @return {boolean}
+   */
+  hasChangesIn(table) {
+    if(this.#data[table] !== undefined){
+      return true;
     }
-    return count;
+    return this.#cmdArray.findIndex((cmd) => cmd[table] !== undefined) !== -1;
   }
 }
 
