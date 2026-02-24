@@ -60,8 +60,7 @@ final readonly class EditModeService
         }
 
         $this->assetCollector->addStyleSheet('editable', 'EXT:visual_editor/Resources/Public/Css/editable.css');
-        $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
-        $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index.mjs');
+        $this->assetCollector->addJavaScriptModule('@typo3/visual-editor/Frontend/index');
 
         $this->loadLanguageLabelsInline();
 

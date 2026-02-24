@@ -1,9 +1,9 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
-import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
-import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
-import {openModal} from "@typo3/visual-editor/Frontend/components/ve-iframe-popup.mjs";
-import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
+import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
+import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {openModal} from '@typo3/visual-editor/Frontend/components/ve-iframe-popup';
+import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 
 /**
  * @extends {HTMLElement}

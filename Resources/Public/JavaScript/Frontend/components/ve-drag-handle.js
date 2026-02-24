@@ -1,6 +1,6 @@
 import {css, LitElement} from 'lit';
-import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
-import {autoNoOverlap} from "@typo3/visual-editor/Frontend/auto-no-overlap.mjs";
+import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
+import {autoNoOverlap} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 
 /**
  * @extends {HTMLElement}

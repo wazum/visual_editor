@@ -1,12 +1,12 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
 import {classMap} from 'lit/directives/class-map.js';
-import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
-import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
-import {dragInProgressStore} from "@typo3/visual-editor/Frontend/stores/drag-store.mjs";
-import {flipInsertBefore} from "@typo3/visual-editor/Frontend/flip-insert-before.mjs";
-import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
-import {autoNoOverlap, calculateAllDebounced} from "@typo3/visual-editor/Frontend/auto-no-overlap.mjs";
+import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
+import {dragInProgressStore} from '@typo3/visual-editor/Frontend/stores/drag-store';
+import {flipInsertBefore} from '@typo3/visual-editor/Frontend/flip-insert-before';
+import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
+import {autoNoOverlap, calculateAllDebounced} from '@typo3/visual-editor/Frontend/auto-no-overlap';
 
 /**
  * @extends {HTMLElement}

@@ -1,8 +1,8 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
-import {isDirectMode, onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
-import {useDataHandler} from "@typo3/visual-editor/Frontend/api.mjs";
-import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
+import {isDirectMode, onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {useDataHandler} from '@typo3/visual-editor/Frontend/use-data-handler';
+import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
 
 /**
  * @extends {HTMLElement}

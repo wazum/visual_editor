@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit';
-import {isDirectMode, sendMessage} from "@typo3/visual-editor/Shared/iframe-messaging.mjs";
+import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 /**
  * @param {string} src

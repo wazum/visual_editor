@@ -1,9 +1,9 @@
 import Modal from '@typo3/backend/modal.js';
-import {onMessage, stopListeningMessages} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
-import '@typo3/visual-editor/Backend/components/ve-auto-save-toggle.mjs';
-import '@typo3/visual-editor/Backend/components/ve-backend-save-button.mjs';
-import '@typo3/visual-editor/Backend/components/ve-spotlight-toggle.mjs';
-import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle.mjs';
+import {onMessage, stopListeningMessages} from '@typo3/visual-editor/Shared/iframe-messaging';
+import '@typo3/visual-editor/Backend/components/ve-auto-save-toggle';
+import '@typo3/visual-editor/Backend/components/ve-backend-save-button';
+import '@typo3/visual-editor/Backend/components/ve-spotlight-toggle';
+import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle';
 import {ModuleStateStorage} from '@typo3/backend/storage/module-state-storage.js';
 
 

@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
-import {dataHandlerStore} from "@typo3/visual-editor/Frontend/stores/data-handler-store.mjs";
-import {showEmptyActive} from "@typo3/visual-editor/Shared/local-stores.mjs";
+import {dataHandlerStore} from '@typo3/visual-editor/Frontend/stores/data-handler-store';
+import {showEmptyActive} from '@typo3/visual-editor/Shared/local-stores';
 
 /**
  * @extends {HTMLElement}
@@ -23,6 +23,7 @@ export class VeEditableText extends LitElement {
 
   constructor() {
     super();
+
     this.value = this.innerText;
     this.valueInitial = this.value;
     this.innerText = '';

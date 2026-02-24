@@ -49,8 +49,7 @@ before:
 after:
 <h1>{record -> f:render.text(field: 'header')}</h1>
 ````
-If you do not have a Record object yet, there are two options:  
-Add it via [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtransformationprocessor):
+If you do not have a Record object yet, you can create one with the `record-transformation` [DataProcessors](https://docs.typo3.org/permalink/t3tsref:recordtransformationprocessor):
 
 ````ts
 // add record dataProcessor for all content elements

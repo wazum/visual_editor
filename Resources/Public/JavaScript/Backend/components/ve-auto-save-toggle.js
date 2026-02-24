@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
-import {onMessageDebounced, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
-import {autoSaveActive} from "@typo3/visual-editor/Shared/local-stores.mjs";
+import {onMessageDebounced, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
+import {autoSaveActive} from '@typo3/visual-editor/Shared/local-stores';
 
 
 /**

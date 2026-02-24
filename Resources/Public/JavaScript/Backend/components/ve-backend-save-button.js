@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {lll} from "@typo3/core/lit-helper.js";
-import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 /**
  * @extends {HTMLElement}

@@ -147,7 +147,7 @@ final class PageEditController
         }
 
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-            JavaScriptModuleInstruction::create('@typo3/visual-editor/Backend/index.mjs'),
+            JavaScriptModuleInstruction::create('@typo3/visual-editor/Backend/index'),
         );
 
         $view = $this->moduleTemplateFactory->create($request);

@@ -1,4 +1,4 @@
-import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging.mjs';
+import {onMessage, sendMessage} from '@typo3/visual-editor/Shared/iframe-messaging';
 
 class LocalStore extends EventTarget {
   /**

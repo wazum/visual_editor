@@ -1,4 +1,4 @@
-import {sortTheNodesThroughTheShadowRootsAndSlots} from "@typo3/visual-editor/Frontend/sort-the-nodes-through-the-shadow-roots-and-slots.mjs";
+import {sortTheNodesThroughTheShadowRootsAndSlots} from '@typo3/visual-editor/Frontend/sort-the-nodes-through-the-shadow-roots-and-slots';
 
 /**
  * @return {void}
