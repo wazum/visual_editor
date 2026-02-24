@@ -4,21 +4,26 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Middleware;
 
+use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use TYPO3\CMS\Backend\Middleware\JavaScriptLabelImportMapEntryResolver;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
+use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Page\Event\ResolveVirtualJavaScriptImportEvent;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
@@ -29,14 +34,16 @@ use function array_keys;
 use function implode;
 use function json_decode;
 
-class PersistenceMiddleware implements MiddlewareInterface
+readonly class PersistenceMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly Context $context,
-        private readonly DataHandlerService $dataHandlerService,
-        private readonly UriBuilder $uriBuilder,
-        private readonly ViewFactoryInterface $viewFactory,
-        private readonly FormProtectionFactory $formProtectionFactory,
+        private Context $context,
+        private DataHandlerService $dataHandlerService,
+        private UriBuilder $uriBuilder,
+        private ViewFactoryInterface $viewFactory,
+        private FormProtectionFactory $formProtectionFactory,
+        private Typo3Version $typo3Version,
+        private ListenerProvider $listenerProvider,
     ) {
     }
 
@@ -154,6 +161,16 @@ class PersistenceMiddleware implements MiddlewareInterface
                 includeScheduledRecords: false,
             ),
         );
+
+        if ($this->typo3Version->getMajorVersion() >= 14) {
+            // currently this is needed to allow ~labels imports to work in frontend context. (maybe this change in the development of v14)
+            $this->listenerProvider->addListener(
+                ResolveVirtualJavaScriptImportEvent::class,
+                JavaScriptLabelImportMapEntryResolver::class,
+                'resolveVirtualLabelImport',
+            );
+        }
+
         return $handler->handle($request);
     }
 }
