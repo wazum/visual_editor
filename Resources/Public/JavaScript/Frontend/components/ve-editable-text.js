@@ -63,14 +63,50 @@ export class VeEditableText extends LitElement {
    */
   firstUpdated(changedProperties) {
     this.placeholder = '👀' + (this.placeholder || this.title);
-    const aTag = this.closest('a');
-    if (aTag) {
-      // disable links above editable inputs to prevent navigation when clicking
-      aTag.dataset.href = aTag.href;
-      aTag.removeAttribute('href');
-    }
+    this.#initHandleLinkClick();
     this.shadowRoot.querySelector('.slot').innerText = this.valueInitial || '';
     dataHandlerStore.setInitialData(this.table, this.uid, this.field, this.valueInitial);
+  }
+
+  #initHandleLinkClick() {
+    const aTag = this.closest('a');
+    if (!(aTag instanceof HTMLAnchorElement)) {
+      return;
+    }
+    aTag.dataset.veHref = aTag.href;
+
+    // remove the href if the text is hovered.
+    this.addEventListener('mouseover', () => aTag.removeAttribute('href'));
+    // add the href back when the mouse leaves the text.
+    this.addEventListener('mouseout', () => aTag.href = aTag.dataset.veHref);
+
+    // on right-click on the text, we want to open the context menu for the link, so we need to add the href back before the context menu opens, and remove it again after.
+    this.addEventListener('contextmenu', () => {
+      aTag.href = aTag.dataset.veHref;
+      setTimeout(() => aTag.removeAttribute('href'));
+    });
+
+    // on middle-click or ctrl/cmd + left click, we want to open the link
+    // we want to open the link in the same tab, even if it has target="_blank"
+    // we do that because otherwise you can not open the link in the same tab.
+    // you can still open the link in a new tab by right-clicking and choosing "open link in new tab"
+    this.addEventListener('mousedown', (e) => {
+      const ctrlPressed = e.ctrlKey || e.metaKey;
+      const middleClick = e.button === 1;
+      if (ctrlPressed || middleClick) {
+        e.preventDefault();
+        aTag.href = aTag.dataset.veHref;
+
+        const target = aTag.target;
+        aTag.target = '_self';
+        aTag.click();
+
+        setTimeout(() => {
+          aTag.target = target;
+          aTag.removeAttribute('href');
+        });
+      }
+    });
   }
 
   updated(changedProperties) {
