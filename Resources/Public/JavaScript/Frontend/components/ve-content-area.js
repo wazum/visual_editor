@@ -90,7 +90,7 @@ export class VeContentArea extends LitElement {
         table="tt_content"
         target="${this.target}"
         colPos="${this.colPos}"
-        allowedContentTypes="${(this.parentElement.parentElement.allowedContentTypes)}"
+        allowedContentTypes="${(this.allowedContentTypes)}"
         disallowedContentTypes="${this.disallowedContentTypes}"
         columnName="${this.columnName}"
         tx_container_parent="${this.tx_container_parent}"
