@@ -4,7 +4,7 @@ import '@typo3/visual-editor/Backend/components/ve-auto-save-toggle';
 import '@typo3/visual-editor/Backend/components/ve-backend-save-button';
 import '@typo3/visual-editor/Backend/components/ve-spotlight-toggle';
 import '@typo3/visual-editor/Backend/components/ve-show-empty-toggle';
-import {ModuleStateStorage} from '@typo3/backend/storage/module-state-storage.js';
+import {pageChanged} from '@typo3/visual-editor/Backend/page-changed';
 
 
 function reloadAllChildFrames() {
@@ -46,27 +46,4 @@ onMessage('openInMiddleFrame', (href) => {
   window.location = href;
 });
 
-onMessage('pageChanged', ({pageId, languageId}) => {
-  const newUrl = new URL(window.location.href);
-  newUrl.searchParams.set('id', pageId);
-  if (languageId) {
-    newUrl.searchParams.set('language', languageId);
-  } else {
-    newUrl.searchParams.delete('language');
-  }
-  window.history.pushState(null, '', newUrl);
-
-  // set href of refresh button to new URL
-  document.querySelector('[data-identifier="actions-refresh"]').parentNode.href = newUrl.toString();
-
-  const newUrlTop = new URL(window.top.location.href);
-  newUrlTop.searchParams.set('id', pageId);
-  if (languageId) {
-    newUrlTop.searchParams.set('language', languageId);
-  } else {
-    newUrlTop.searchParams.delete('language');
-  }
-  window.top.history.pushState(null, '', newUrlTop);
-
-  ModuleStateStorage.update('web', pageId);
-});
+onMessage('pageChanged', (data) => pageChanged(data.pageId, data.languageId));
