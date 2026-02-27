@@ -10,7 +10,14 @@ import {isDirectMode, sendMessage} from '@typo3/visual-editor/Shared/iframe-mess
 export function openModal(src, title, size = 'large', type = 'iframe') {
   if (isDirectMode) {
     // direct mode, just navigate
-    window.location = src;
+    try {
+      const parsed = new URL(src, window.location.href);
+      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.host === window.location.host) {
+        window.location = parsed.href;
+      }
+    } catch {
+      // invalid URL, ignore
+    }
     return;
   }
 

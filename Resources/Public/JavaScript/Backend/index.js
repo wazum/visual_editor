@@ -43,7 +43,10 @@ function openIframeModal(src, title = '', size = 'large', type = 'iframe') {
 onMessage('openModal', (data) => openIframeModal(data.src, data.title || '', data.size || undefined, data.type || undefined));
 onMessage('reloadFrames', () => reloadAllChildFrames());
 onMessage('openInMiddleFrame', (href) => {
-  window.location = href;
+  const parsedHref = new URL(href, window.location.href);
+  // keep the origin of the current window to avoid CORS issues in the Backend.
+  parsedHref.origin = window.location.origin;
+  window.location = parsedHref.href;
 });
 
 onMessage('pageChanged', (data) => pageChanged(data.pageId, data.languageId));

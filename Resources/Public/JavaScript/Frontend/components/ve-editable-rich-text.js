@@ -55,7 +55,11 @@ export class VeEditableRichText extends LitElement {
     this.placeholder = '👀' + (this.placeholder || this.title);
     /** @type {HTMLElement} */
     const element = this;
-    element.innerHTML = `<div>${element.innerHTML}</div>`;
+    const wrapper = document.createElement('div');
+    while (element.firstChild) {
+      wrapper.appendChild(element.firstChild);
+    }
+    element.appendChild(wrapper);
     this.editor = await initCKEditorInstance(this.options || {}, element.firstElementChild, element.firstElementChild, Editor);
     this.editor.editing.view.document.getRoot('main').placeholder = this.placeholder;
     this.editor.model.document.on('change:data', () => {

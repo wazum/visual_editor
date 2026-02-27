@@ -83,7 +83,9 @@ export class VeContentElement extends LitElement {
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
       const message = 'Use f:render.contentArea or f:mark.contentArea at this location!';
-      this.innerHTML = `<ve-error text="${message}"/>`;
+      const veError = document.createElement('ve-error');
+      veError.setAttribute('text', message);
+      this.appendChild(veError);
       throw new Error(message);
     }
   }

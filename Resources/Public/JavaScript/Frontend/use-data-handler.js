@@ -1,6 +1,6 @@
 /**
  * @typedef {Record<string, Record<number, Record<string, boolean|number|string>>>} Data
- * @typedef {Record<string, Record<number, Record<'move'|'copy'|'delete', any>>>}Cmd
+ * @typedef {Record<string, Record<number, Record<'move'|'copy'|'delete', any>>>} Cmd
  * @param {Data} data
  * @param {Cmd[]} cmdArray
  * @returns {Promise<void>}
@@ -15,6 +15,7 @@ export async function useDataHandler(data = {}, cmdArray = []) {
     body: JSON.stringify({data, cmdArray}, null, 2),
   });
   if (!response.ok) {
+    // TODO handle innerHTML differently, (maybe return json exception with message and details instead of whole HTML)
     document.body.innerHTML = await response.text();
     throw new Error('Failed to save data');
   }

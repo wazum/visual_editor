@@ -3,6 +3,18 @@
  * @param languageId {number}
  */
 export function pageChanged(pageId, languageId) {
+  pageId = parseInt(pageId, 10);
+  languageId = parseInt(languageId, 10);
+
+  if (isNaN(pageId) || pageId <= 0) {
+    console.error('pageChanged: invalid pageId', pageId);
+    return;
+  }
+
+  if (isNaN(languageId) || languageId < 0) {
+    languageId = 0;
+  }
+
   const newUrl = new URL(window.location.href);
   newUrl.searchParams.set('id', pageId);
   if (languageId) {
