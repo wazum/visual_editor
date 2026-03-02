@@ -60,7 +60,8 @@ use function sprintf;
 #[AsController]
 final class PageEditController
 {
-    private SiteLanguage $selectedLanguage;
+    /** @var list<SiteLanguage> */
+    private array $selectedLanguages = [];
 
     private ModuleData $moduleData;
 
@@ -102,7 +103,9 @@ final class PageEditController
 
         $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
-        $this->selectedLanguage = $site->getLanguageById((int)($this->moduleData->get('language') ?? 0));
+        // Fallback to moduleData language, can be removed if TYPO3 v13 support is dropped.
+        $languages = $request->getQueryParams()['languages'] ?? [$this->moduleData->get('language') ?? 0];
+        $this->selectedLanguages = array_map(fn($languageUid): SiteLanguage => $site->getLanguageById((int)$languageUid), $languages);
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
         $this->schema = $this->tcaSchemaFactory->get('pages');
 
@@ -125,11 +128,15 @@ final class PageEditController
         }
         $this->pageRecord = $record;
 
-        $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguage->getLanguageId());
+        $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
 
         if (!$localizedPageRecord) {
             // if no translation is found for the selected langauge, we reset the langauge to the default language
-            $this->selectedLanguage = $site->getDefaultLanguage();
+            $this->selectedLanguages = [$site->getDefaultLanguage()];
+        }
+
+        if ($this->typo3Version->getMajorVersion() <= 13) {
+            $this->moduleData->set('language', $this->selectedLanguages[0]->getLanguageId());
         }
     }
 
@@ -197,7 +204,7 @@ final class PageEditController
         return $this->site->getRouter()->generateUri(
             $this->pageRecord->getUid(),
             [
-                '_language' => $this->selectedLanguage->getLanguageId(),
+                '_language' => $this->selectedLanguages[0]->getLanguageId(),
                 'editMode' => 1,
             ],
         );
@@ -298,7 +305,7 @@ final class PageEditController
 
         $previewDataAttributes = $previewUriBuilder
             ->withRootLine(BackendUtility::BEgetRootLine($this->pageRecord->getUid()))
-            ->withLanguage($this->selectedLanguage->getLanguageId())
+            ->withLanguage($this->selectedLanguages[0]->getLanguageId())
             ->buildDispatcherDataAttributes();
 
         return $buttonBar
@@ -353,8 +360,8 @@ final class PageEditController
     private function makeEditButton(ButtonBar $buttonBar, ServerRequestInterface $request): ButtonInterface
     {
         $pageUid = $this->pageRecord->getUid();
-        if ($this->selectedLanguage->getLanguageId() > 0) {
-            $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguage->getLanguageId());
+        if ($this->selectedLanguages[0]->getLanguageId() > 0) {
+            $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
             $pageUid = $localizedPageRecord['uid'] ?? $pageUid;
         }
 
@@ -403,7 +410,7 @@ final class PageEditController
                 LanguageSelectorMode::SINGLE_SELECT,
                 fn(array $languageIds): string => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
                     'id' => $pageContext->pageId,
-                    'language' => $languageIds[0] ?? 0,
+                    'languages' => $languageIds,
                 ]),
             );
             $view->getDocHeaderComponent()->setLanguageSelector($languageSelector);
@@ -423,12 +430,18 @@ final class PageEditController
             if (!in_array($language->getLanguageId(), $translationLanguageUids)) {
                 continue;
             }
-            $href = (string)$this->uriBuilder->buildUriFromRoute('web_edit', ['id' => $this->pageRecord->getUid(), 'language' => $language->getLanguageId()]);
+            $href = (string)$this->uriBuilder->buildUriFromRoute(
+                'web_edit',
+                [
+                    'id' => $this->pageRecord->getUid(),
+                    'languages' => [$language->getLanguageId()],
+                ],
+            );
             $menuItem = $actionMenu
                 ->makeMenuItem()
                 ->setTitle($language->getTitle())
                 ->setHref($href)
-                ->setActive($language->getLanguageId() === $this->selectedLanguage->getLanguageId());
+                ->setActive($language->getLanguageId() === $this->selectedLanguages[0]->getLanguageId());
             $actionMenu->addMenuItem($menuItem);
         }
 

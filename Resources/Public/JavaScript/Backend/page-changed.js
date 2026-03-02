@@ -18,13 +18,13 @@ export function pageChanged(pageId, languageId) {
   const newUrl = new URL(window.location.href);
   newUrl.searchParams.set('id', pageId);
   if (languageId) {
-    newUrl.searchParams.set('language', languageId);
+    newUrl.searchParams.set('languages[0]', languageId);
   } else {
-    newUrl.searchParams.delete('language');
+    newUrl.searchParams.delete('languages[0]');
   }
   window.history.pushState(null, '', newUrl);
 
-  newUrl.searchParams.set('language', languageId);
+  newUrl.searchParams.set('languages[0]', languageId);
   loadModuleDocHeader(newUrl);
 
   // set href of refresh button to new URL
@@ -33,9 +33,9 @@ export function pageChanged(pageId, languageId) {
   const newUrlTop = new URL(window.top.location.href);
   newUrlTop.searchParams.set('id', pageId);
   if (languageId) {
-    newUrlTop.searchParams.set('language', languageId);
+    newUrlTop.searchParams.set('languages[0]', languageId);
   } else {
-    newUrlTop.searchParams.delete('language');
+    newUrlTop.searchParams.delete('languages[0]');
   }
   window.top.history.pushState(null, '', newUrlTop);
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Middleware;
 
-use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -14,7 +13,6 @@ use TYPO3\CMS\Backend\Middleware\JavaScriptLabelImportMapEntryResolver;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Error\Http\UnauthorizedException;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
@@ -29,7 +27,6 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\DataHandlerService;
-use TYPO3\CMS\VisualEditor\Service\EditModeService;
 
 use function array_keys;
 use function implode;
