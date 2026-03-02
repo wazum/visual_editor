@@ -15,6 +15,8 @@ use TYPO3\CMS\Backend\Routing\PreviewUriBuilder;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\Buttons\ButtonInterface;
+use TYPO3\CMS\Backend\Template\Components\Buttons\DropDown\DropDownItemInterface;
+use TYPO3\CMS\Backend\Template\Components\Buttons\DropDown\DropDownRadio;
 use TYPO3\CMS\Backend\Template\Components\Buttons\GenericButton;
 use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorBuilder;
 use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorMode;
@@ -53,6 +55,7 @@ use TYPO3\CMS\Core\Versioning\VersionState;
 use function array_map;
 use function assert;
 use function count;
+use function dump;
 use function in_array;
 use function is_array;
 use function sprintf;
@@ -103,8 +106,7 @@ final class PageEditController
 
         $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
-        // Fallback to moduleData language, can be removed if TYPO3 v13 support is dropped.
-        $languages = $request->getQueryParams()['languages'] ?? [$this->moduleData->get('language') ?? 0];
+        $languages = $this->moduleData->get('languages') ?? [0];
         $this->selectedLanguages = array_map(fn($languageUid): SiteLanguage => $site->getLanguageById((int)$languageUid), $languages);
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
         $this->schema = $this->tcaSchemaFactory->get('pages');
@@ -126,6 +128,7 @@ final class PageEditController
         if ($record->getRecordType() === '254') {
             throw new InvalidArgumentException('Page record is of type "folder" and cannot be edited with the Visual Editor', 5965019514);
         }
+
         $this->pageRecord = $record;
 
         $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
@@ -133,10 +136,6 @@ final class PageEditController
         if (!$localizedPageRecord) {
             // if no translation is found for the selected langauge, we reset the langauge to the default language
             $this->selectedLanguages = [$site->getDefaultLanguage()];
-        }
-
-        if ($this->typo3Version->getMajorVersion() <= 13) {
-            $this->moduleData->set('language', $this->selectedLanguages[0]->getLanguageId());
         }
     }
 
@@ -187,7 +186,7 @@ final class PageEditController
         $view->assign('returnUrl', $returnUrl);
 
         $this->makeButtons($view, $request);
-        $this->makeActionMenu($view, $request);
+        $this->makeLanguageMenu($view, $request);
 
 
         if ($iframeUrl->getScheme() !== '' && $iframeUrl->getHost() !== '') {
@@ -214,34 +213,39 @@ final class PageEditController
     {
         $buttonBar = $view->getDocHeaderComponent()->getButtonBar();
 
+        // Language Select in v13
+        if ($button = $this->makeLanguageSelect($buttonBar)) {
+            $buttonBar->addButton($button, buttonGroup: 1);
+        }
+
         // Auto Save
         if ($button = $this->makeAutoSaveButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 1);
+            $buttonBar->addButton($button, buttonGroup: 2);
         }
 
         // Save
         if ($button = $this->makeSaveButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 1);
+            $buttonBar->addButton($button, buttonGroup: 2);
         }
 
         // Spotlight Toggle
         if ($button = $this->makeSpotlightToggleButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 2);
+            $buttonBar->addButton($button, buttonGroup: 3);
         }
 
         // Show Empty Toggle
         if ($button = $this->makeShowEmptyToggleButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 2);
+            $buttonBar->addButton($button, buttonGroup: 3);
         }
 
         // View
         if ($button = $this->makeViewButton($buttonBar)) {
-            $buttonBar->addButton($button, buttonGroup: 3);
+            $buttonBar->addButton($button, buttonGroup: 4);
         }
 
         // Edit Page Properties
         if ($button = $this->makeEditButton($buttonBar, $request)) {
-            $buttonBar->addButton($button, buttonGroup: 3);
+            $buttonBar->addButton($button, buttonGroup: 4);
         }
 
         // Clear Cache
@@ -396,56 +400,27 @@ final class PageEditController
      * This creates the dropdown menu with the different actions this module is able to provide.
      * For now, they are Columns and Languages.
      */
-    private function makeActionMenu(ModuleTemplate $view, ServerRequestInterface $request): void
+    private function makeLanguageMenu(ModuleTemplate $view, ServerRequestInterface $request): void
     {
-        if ($this->typo3Version->getMajorVersion() >= 14) {
-            $pageContext = $request->getAttribute('pageContext');
-            if (!$pageContext instanceof PageContext) {
-                throw new InvalidArgumentException('PageContext is missing from request attributes', 1772441095);
-            }
-
-            $languageSelectorBuilder = GeneralUtility::makeInstance(LanguageSelectorBuilder::class);
-            $languageSelector = $languageSelectorBuilder->build(
-                $pageContext,
-                LanguageSelectorMode::SINGLE_SELECT,
-                fn(array $languageIds): string => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
-                    'id' => $pageContext->pageId,
-                    'languages' => $languageIds,
-                ]),
-            );
-            $view->getDocHeaderComponent()->setLanguageSelector($languageSelector);
+        if ($this->typo3Version->getMajorVersion() <= 13) {
             return;
         }
 
-        $actionMenu = $view->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
-        $actionMenu->setIdentifier('languageMenu');
-        $actionMenu->setLabel('Language');
-
-        $pageTranslations = BackendUtility::getExistingPageTranslations($this->pageRecord->getUid());
-        $languageField = $this->schema->getCapability(TcaSchemaCapability::Language)->getLanguageField()->getName();
-        $translationLanguageUids = array_map(fn($pageTranslation) => (int)$pageTranslation[$languageField], $pageTranslations);
-        $translationLanguageUids[] = 0;
-
-        foreach ($this->availableLanguages as $language) {
-            if (!in_array($language->getLanguageId(), $translationLanguageUids)) {
-                continue;
-            }
-            $href = (string)$this->uriBuilder->buildUriFromRoute(
-                'web_edit',
-                [
-                    'id' => $this->pageRecord->getUid(),
-                    'languages' => [$language->getLanguageId()],
-                ],
-            );
-            $menuItem = $actionMenu
-                ->makeMenuItem()
-                ->setTitle($language->getTitle())
-                ->setHref($href)
-                ->setActive($language->getLanguageId() === $this->selectedLanguages[0]->getLanguageId());
-            $actionMenu->addMenuItem($menuItem);
+        $pageContext = $request->getAttribute('pageContext');
+        if (!$pageContext instanceof PageContext) {
+            throw new InvalidArgumentException('PageContext is missing from request attributes', 1772441095);
         }
 
-        $view->getDocHeaderComponent()->getMenuRegistry()->addMenu($actionMenu);
+        $languageSelectorBuilder = GeneralUtility::makeInstance(LanguageSelectorBuilder::class);
+        $languageSelector = $languageSelectorBuilder->build(
+            $pageContext,
+            LanguageSelectorMode::SINGLE_SELECT,
+            fn(array $languageIds): string => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+                'id' => $pageContext->pageId,
+                'languages' => $languageIds,
+            ]),
+        );
+        $view->getDocHeaderComponent()->setLanguageSelector($languageSelector);
     }
 
     private function getLanguageService(): LanguageService
@@ -566,5 +541,50 @@ final class PageEditController
             ->setLabel($this->getLanguageService()->sL('LLL:EXT:visual_editor/Resources/Private/Language/locallang_mod.xlf:showEmpty'))
             ->setIcon($this->iconFactory->getIcon('actions-hyphen', IconSize::SMALL))
             ->setShowLabelText(true);
+    }
+
+    /**
+     * @deprecated will be removed after TYPO3 v13 support is dropped
+     */
+    private function makeLanguageSelect(ButtonBar $buttonBar): ?ButtonInterface
+    {
+        if($this->typo3Version->getMajorVersion() >= 14) {
+            // in v14 we use the new LanguageSelector component instead of a custom dropdown button, so we return null here to not add the old language dropdown
+            return null;
+        }
+
+        $languageService = $this->getLanguageService();
+
+        $languageDropDownButton = $buttonBar->makeDropDownButton()
+            ->setLabel($languageService->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.language'))
+            ->setShowLabelText(true);
+
+        $pageTranslations = BackendUtility::getExistingPageTranslations($this->pageRecord->getUid());
+        $languageField = $this->schema->getCapability(TcaSchemaCapability::Language)->getLanguageField()->getName();
+        $translationLanguageUids = array_map(fn(array $pageTranslation): int => (int)$pageTranslation[$languageField], $pageTranslations);
+        $translationLanguageUids[] = 0;
+
+        foreach ($this->availableLanguages as $language) {
+            if (!in_array($language->getLanguageId(), $translationLanguageUids)) {
+                continue;
+            }
+
+            $href = (string)$this->uriBuilder->buildUriFromRoute(
+                'web_edit',
+                [
+                    'id' => $this->pageRecord->getUid(),
+                    'languages' => [$language->getLanguageId()],
+                ],
+            );
+            /** @var DropDownItemInterface $languageItem */
+            $languageItem = GeneralUtility::makeInstance(DropDownRadio::class)
+                ->setActive($language->getLanguageId() === $this->selectedLanguages[0]->getLanguageId())
+                ->setIcon($this->iconFactory->getIcon($language->getFlagIdentifier()))
+                ->setHref($href)
+                ->setLabel($language->getTitle());
+            $languageDropDownButton->addItem($languageItem);
+        }
+
+        return $languageDropDownButton;
     }
 }

@@ -17,7 +17,7 @@ return [
         ],
         'moduleData' => [
             'function' => 1,
-            'language' => 0,
+            'languages' => [0],
             'showHidden' => true,
         ],
     ],
