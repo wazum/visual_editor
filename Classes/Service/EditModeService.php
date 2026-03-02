@@ -8,8 +8,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Domain\Record;
 use TYPO3\CMS\Core\Domain\RecordInterface;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
@@ -18,13 +16,11 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
-use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 
-use function assert;
 use function method_exists;
 
 final readonly class EditModeService
@@ -180,7 +176,7 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
     private function loadLanguageLabelsInline(): void
     {
         $file = 'EXT:visual_editor/Resources/Private/Language/locallang.xlf';
-        $languageService = $this->languageServiceFactory->create($this->localizationService->getBackendUserLanguage());
+        $languageService = $this->languageServiceFactory->create($this->localizationService->getBackendUserLanguage() ?? 'en');
         foreach ($languageService->getLabelsFromResource($file) as $key => $value) {
             $this->pageRenderer->addInlineLanguageLabel($key, $value);
         }

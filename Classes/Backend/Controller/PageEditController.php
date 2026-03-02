@@ -23,7 +23,6 @@ use TYPO3\CMS\Backend\Template\Components\Buttons\LanguageSelectorMode;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Backend\View\PageViewMode;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -54,12 +53,16 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
 
 use function array_map;
+use function array_values;
 use function assert;
 use function count;
 use function in_array;
 use function is_array;
 use function sprintf;
 
+/**
+ * @phpstan-type LanguageRef -1|0|positive-int
+ */
 #[AsController]
 final class PageEditController
 {
@@ -68,9 +71,9 @@ final class PageEditController
 
     private ModuleData $moduleData;
 
-    private ?Record $pageRecord = null;
+    private Record $pageRecord;
 
-    /** @var list<SiteLanguage> */
+    /** @var array<LanguageRef, SiteLanguage> */
     private array $availableLanguages = [];
 
     private Site $site;
@@ -94,7 +97,7 @@ final class PageEditController
     private function initialize(ServerRequestInterface $request): void
     {
         $backendUser = $this->getBackendUser();
-        $pageUid = (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? throw new InvalidArgumentException(
+        $pageUid = (int)($request->getQueryParams()['id'] ?? throw new InvalidArgumentException(
             'Missing "id" query parameter',
             8412770259,
         ));
@@ -107,17 +110,14 @@ final class PageEditController
         $this->site = $site;
         $this->availableLanguages = $site->getAvailableLanguages($backendUser, false, $pageUid);
         $languages = $this->moduleData->get('languages') ?? [0];
-        $this->selectedLanguages = array_map(fn($languageUid): SiteLanguage => $site->getLanguageById((int)$languageUid), $languages);
+        $this->selectedLanguages = array_values(array_map(fn($languageUid): SiteLanguage => $site->getLanguageById((int)$languageUid), $languages));
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:visual_editor/Resources/Private/Language/locallang.xlf');
         $this->schema = $this->tcaSchemaFactory->get('pages');
 
         $pageInfo = BackendUtility::readPageAccess($pageUid, $backendUser->getPagePermsClause(Permission::PAGE_SHOW));
         if (!$pageInfo || count($pageInfo) === 1) {
             // if $pageInfo is "empty" it will have the property "_thePath"
-            throw new InvalidArgumentException(
-                'Page record not found for id ' . (int)($request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0),
-                4884897021,
-            );
+            throw new InvalidArgumentException('Page record not found for id ' . $pageUid, 4884897021);
         }
 
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow('pages', $pageInfo);
@@ -150,7 +150,7 @@ final class PageEditController
             // Page uid 0 or no access.
             $view->setTitle($languageService->sL('LLL:EXT:backend/Resources/Private/Language/locallang_mod.xlf:mlang_tabs_tab'));
             $view->assignMultiple([
-                'pageId' => $request->getParsedBody()['id'] ?? $request->getQueryParams()['id'] ?? 0,
+                'pageId' => (int)($request->getQueryParams()['id'] ?? 0),
                 'siteName' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] ?? '',
             ]);
 
@@ -296,7 +296,7 @@ final class PageEditController
     private function makeViewButton(ButtonBar $buttonBar): ?ButtonInterface
     {
         if (
-            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
         ) {
             return null;
         }
@@ -320,6 +320,9 @@ final class PageEditController
             ->setIcon($this->iconFactory->getIcon('actions-view-page', IconSize::SMALL));
     }
 
+    /**
+     * @return array<string, string|float|int|bool|null>|null
+     */
     private function getLocalizedPageRecord(int $languageId): ?array
     {
         if ($languageId === 0) {
@@ -370,11 +373,11 @@ final class PageEditController
         $pageUid = $this->pageRecord->getUid();
         if ($this->selectedLanguages[0]->getLanguageId() > 0) {
             $localizedPageRecord = $this->getLocalizedPageRecord($this->selectedLanguages[0]->getLanguageId());
-            $pageUid = $localizedPageRecord['uid'] ?? $pageUid;
+            $pageUid = (int)($localizedPageRecord['uid'] ?? $pageUid);
         }
 
         $params = [
-            'returnUrl' => $request->getAttribute('normalizedParams')->getRequestUri(),
+            'returnUrl' => $request->getAttribute('normalizedParams')?->getRequestUri(),
             'edit' => [
                 'pages' => [
                     $pageUid => 'edit',
@@ -403,28 +406,34 @@ final class PageEditController
     /**
      * Check if page can be edited by current user.
      */
-    protected function isPageEditable(int $languageId): bool
+    private function isPageEditable(int $languageId): bool
     {
         if (empty($this->pageRecord)) {
             return false;
         }
+
         if ($this->schema->hasCapability(TcaSchemaCapability::AccessReadOnly)) {
             return false;
         }
+
         $backendUser = $this->getBackendUser();
         if ($backendUser->isAdmin()) {
             return true;
         }
+
         if ($this->schema->hasCapability(TcaSchemaCapability::AccessAdminOnly)) {
             return false;
         }
+
         $isEditLocked = false;
         if ($this->schema->hasCapability(TcaSchemaCapability::EditLock)) {
             $isEditLocked = $this->pageRecord->get($this->schema->getCapability(TcaSchemaCapability::EditLock)->getFieldName()) ?? false;
         }
+
         if ($isEditLocked) {
             return false;
         }
+
         return $backendUser->doesUserHaveAccess($this->pageRecord->getRawRecord()->toArray(true), Permission::PAGE_EDIT)
             && $backendUser->checkLanguageAccess($languageId)
             && $backendUser->check('tables_modify', 'pages');
@@ -471,7 +480,7 @@ final class PageEditController
     private function makeAutoSaveButton(ButtonBar $buttonBar): ?GenericButton
     {
         if (
-            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
         ) {
             return null;
         }
@@ -510,7 +519,7 @@ final class PageEditController
     private function makeSaveButton(ButtonBar $buttonBar): ?GenericButton
     {
         if (
-            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
         ) {
             return null;
         }
@@ -534,7 +543,7 @@ final class PageEditController
     private function makeSpotlightToggleButton(ButtonBar $buttonBar): ?ButtonInterface
     {
         if (
-            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
         ) {
             return null;
         }
@@ -557,7 +566,7 @@ final class PageEditController
     private function makeShowEmptyToggleButton(ButtonBar $buttonBar): ?ButtonInterface
     {
         if (
-            $this->pageRecord->getVersionInfo()->getState() === VersionState::DELETE_PLACEHOLDER
+            $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
         ) {
             return null;
         }
@@ -582,7 +591,7 @@ final class PageEditController
      */
     private function makeLanguageSelect(ButtonBar $buttonBar): ?ButtonInterface
     {
-        if($this->typo3Version->getMajorVersion() >= 14) {
+        if ($this->typo3Version->getMajorVersion() >= 14) {
             // in v14 we use the new LanguageSelector component instead of a custom dropdown button, so we return null here to not add the old language dropdown
             return null;
         }

@@ -10,12 +10,16 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 final readonly class LocalizationService
 {
+    /**
+     * @param array<array-key, mixed> $arguments
+     */
     public function tryTranslation(string $label, ?array $arguments = null, Locale|string|null $languageKey = null): string
     {
         $languageKey ??=  $this->getBackendUserLanguage();
 
         try {
-            return LocalizationUtility::translate($label, arguments: $arguments, languageKey: $languageKey);
+            return LocalizationUtility::translate($label, arguments: $arguments, languageKey: $languageKey)
+                ?? $label;
         } catch (InvalidArgumentException) {
             return $label;
         }

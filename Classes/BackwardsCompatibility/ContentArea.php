@@ -26,6 +26,9 @@ final readonly class ContentArea
         return $this->name;
     }
 
+    /**
+     * @return array{tx_container_parent: int}
+     */
     public function getConfiguration(): array
     {
         return [
@@ -33,12 +36,18 @@ final readonly class ContentArea
         ];
     }
 
+    /**
+     * @return array{}
+     */
     public function getAllowedContentTypes(): array
     {
         // TODO use content EXT:content_defender here?
         return [];
     }
 
+    /**
+     * @return array{}
+     */
     public function getDisallowedContentTypes(): array
     {
         // TODO use content EXT:content_defender here?

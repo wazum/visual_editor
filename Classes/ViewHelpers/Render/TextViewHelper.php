@@ -94,7 +94,8 @@ final class TextViewHelper extends AbstractViewHelper
 
     public function render(): Input|RichText
     {
-        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
+        $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1772464146);
+        $request = $renderingContext->getAttribute(ServerRequestInterface::class);
         $this->editModeService->init($request);
 
         $record = $this->renderChildren();
@@ -195,10 +196,11 @@ final class TextViewHelper extends AbstractViewHelper
     private function renderRichText(string $value, RecordInterface $record, TextFieldType $field, string $label, bool $editMode): RichText
     {
         if (!$editMode) {
-            $escapedValue = $this->renderingContext->getViewHelperInvoker()->invoke(
+            $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1772464098);
+            $escapedValue = $renderingContext->getViewHelperInvoker()->invoke(
                 HtmlViewHelper::class,
                 [],
-                $this->renderingContext,
+                $renderingContext,
                 fn(): string => $value,
             );
             return new RichText($label, $escapedValue, $value === '', $value);
@@ -237,21 +239,22 @@ final class TextViewHelper extends AbstractViewHelper
             $record->getMainType(),
             $field,
             $record->getPid(),
-            $record->getRecordType(),
+            $record->getRecordType() ?? '',
             $schema->getField($field)->getConfiguration(),
         );
 
+        $rawRecord = $record->getRawRecord() ?? $record;
         $richTextConfigurationServiceDto = new RichTextConfigurationServiceDto(
             tableName: $record->getMainType(),
             uid: $record->getComputedProperties()->getLocalizedUid() ?: $record->getComputedProperties()->getVersionedUid() ?: $record->getUid(),
             fieldName: $field,
-            recordTypeValue: $record->getRecordType(),
+            recordTypeValue: $record->getRecordType() ?? '',
             effectivePid: $record->getPid(),
             richtextConfigurationName: $richtextConfiguration['preset'],
             label: 'Text',
             placeholder: '',
             readOnly: false,
-            data: $record->getRawRecord()->toArray(),
+            data: $rawRecord->toArray(),
             additionalConfiguration: $richtextConfiguration['editor']['config'],
             externalPlugins: $richtextConfiguration['editor']['externalPlugins'],
         );

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\Core\RichtText;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\Locales;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,12 +28,15 @@ use function strtoupper;
 readonly class RichTextConfigurationService
 {
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
+        private EventDispatcher $eventDispatcher,
         private UriBuilder $uriBuilder,
         private Locales $locales,
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function resolveCkEditorConfiguration(RichTextConfigurationServiceDto $richTextConfigurationServiceDto): array
     {
         $configuration = $this->prepareConfigurationForEditor($richTextConfigurationServiceDto);
@@ -62,7 +65,7 @@ readonly class RichTextConfigurationService
      * Compiles the configuration set from the outside
      * to have it easily injected into the CKEditor.
      *
-     * @return array the configuration
+     * @return array<string, mixed> the configuration
      */
     protected function prepareConfigurationForEditor(RichTextConfigurationServiceDto $richTextConfigurationServiceDto): array
     {
@@ -84,7 +87,7 @@ readonly class RichTextConfigurationService
 
         // Set the UI language of the editor if not hard-coded by the existing configuration
         if (empty($configuration['language']) || (is_array($configuration['language']) && empty($configuration['language']['ui']))) {
-            $userLang = (string)($this->getBackendUser()->user['lang'] ?: 'en');
+            $userLang = (string)(($this->getBackendUser()->user['lang'] ?? null) ?: 'en');
             $configuration['language']['ui'] = $userLang === 'default' ? 'en' : $userLang;
         } elseif (!is_array($configuration['language'])) {
             $configuration['language'] = [
@@ -110,6 +113,7 @@ readonly class RichTextConfigurationService
 
     /**
      * Get configuration of external/additional plugins
+     * @return array<string, array<string, mixed>> Array of plugin name as key and configuration as value
      */
     protected function getExtraPlugins(RichTextConfigurationServiceDto $richTextConfigurationServiceDto): array
     {
@@ -168,7 +172,7 @@ readonly class RichTextConfigurationService
             $contentLanguage = $richTextConfigurationServiceDto->getAdditionalConfiguration()['defaultContentLanguage'] ?? 'en-US';
         }
 
-        $languageCodeParts = explode('_', $contentLanguage);
+        $languageCodeParts = explode('_', (string) $contentLanguage);
         $contentLanguage = strtolower($languageCodeParts[0]) . (empty($languageCodeParts[1]) ? '' : '_' . strtoupper($languageCodeParts[1]));
         // Find the configured language in the list of localization locales, if not found, default to 'en'.
         if ($contentLanguage === 'default' || !$this->locales->isValidLanguageKey($contentLanguage)) {
@@ -180,6 +184,9 @@ readonly class RichTextConfigurationService
 
     /**
      * Add configuration to replace LLL: references with the translated value
+     *
+     * @param array<string, mixed> $configuration
+     * @return array<string, mixed>
      */
     protected function replaceLanguageFileReferences(array $configuration): array
     {
@@ -196,6 +203,9 @@ readonly class RichTextConfigurationService
 
     /**
      * Add configuration to replace absolute EXT: paths with relative ones
+     *
+     * @param array<string, mixed> $configuration
+     * @return array<string, mixed>
      */
     protected function replaceAbsolutePathsToRelativeResourcesPath(array $configuration): array
     {

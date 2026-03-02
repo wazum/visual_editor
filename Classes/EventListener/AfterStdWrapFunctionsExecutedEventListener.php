@@ -28,7 +28,7 @@ final readonly class AfterStdWrapFunctionsExecutedEventListener
         $content = $this->contentElementWrapperService->wrapContentElementHtml(
             $contentObjectRenderer->getCurrentTable(),
             $contentObjectRenderer->data,
-            $event->getContent(),
+            $event->getContent() ?? '',
             $request,
         );
         $event->setContent($content);

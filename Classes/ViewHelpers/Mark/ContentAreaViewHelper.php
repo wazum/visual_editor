@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace TYPO3\CMS\VisualEditor\ViewHelpers\Mark;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Information\Typo3Version;
-use TYPO3\CMS\Core\Page\ContentAreaCollection;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\ContentArea;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
-
-use function is_array;
-use function is_object;
-use function method_exists;
 
 /**
  * ViewHelper to render a content area with possible modifications by event listeners.
@@ -44,7 +40,7 @@ final class ContentAreaViewHelper extends AbstractViewHelper
     protected $escapeOutput = false;
 
     public function __construct(
-        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EventDispatcher $eventDispatcher,
         private readonly EditModeService $editModeService,
         private readonly LocalizationService $localizationService,
         private readonly Typo3Version $typo3Version,
@@ -61,7 +57,8 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
     public function render(): string
     {
-        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
+        $renderingContext = $this->renderingContext ?? throw new InvalidArgumentException('$this->renderingContext is not available', 1772464212);
+        $request = $renderingContext->getAttribute(ServerRequestInterface::class);
 
         $this->editModeService->init($request);
 
@@ -94,7 +91,8 @@ final class ContentAreaViewHelper extends AbstractViewHelper
 
         /** @var PageInformation $pageInformation */
         $pageInformation = $request->getAttribute('frontend.page.information');
-        foreach ($pageInformation->getPageLayout()->getContentAreas() as $contentArea) {
+        $pageLayout = $pageInformation->getPageLayout() ?? throw new InvalidArgumentException('PageLayout is not available', 1772464283);
+        foreach ($pageLayout->getContentAreas() as $contentArea) {
             if ($this->typo3Version->getMajorVersion() >= 14) {
                 $contentAreaColPos = $contentArea->getColPos();
                 $name = $contentArea->getName();
