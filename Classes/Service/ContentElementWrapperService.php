@@ -13,12 +13,7 @@ use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
-
-use function assert;
-use function json_encode;
-use function str_contains;
-
-use const JSON_THROW_ON_ERROR;
+use UnexpectedValueException;
 
 #[Autoconfigure(public: true)]
 final readonly class ContentElementWrapperService
@@ -55,7 +50,10 @@ final readonly class ContentElementWrapperService
         }
 
         $record = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $data);
-        assert($record instanceof Record);
+        if (!$record instanceof Record) {
+            throw new UnexpectedValueException('Record array must be a ' . Record::class, 1772465047);
+        }
+
         $schema = $this->tcaSchema->get($record->getFullType());
 
         $hiddenFieldType = $schema->getCapability(TcaSchemaCapability::RestrictionDisabledField);
@@ -85,11 +83,11 @@ final readonly class ContentElementWrapperService
             $tag->addAttribute('canModifyRecord', 'true');
         }
 
-        if (!$record->getLanguageInfo()->getTranslationParent()) {
+        if (!$record->getLanguageInfo()?->getTranslationParent()) {
             $tag->addAttribute('canBeMoved', 'true');
         }
 
-        if ($record->getSystemProperties()->isDisabled()) {
+        if ($record->getSystemProperties()?->isDisabled()) {
             $tag->addAttribute('isHidden', 'true');
         }
 
@@ -104,9 +102,9 @@ final readonly class ContentElementWrapperService
 
     private function getContentTypeLabel(Record $record): string
     {
-        $recordType = $record->getRecordType();
+        $recordType = $record->getRecordType() ?? '';
         foreach ($GLOBALS['TCA']['tt_content']['columns']['CType']['config']['items'] as $item) {
-            if ($item['value'] === $recordType && $item['label']) {
+            if ($item['value'] === $recordType && isset($item['label'])) {
                 return $this->localizationService->tryTranslation($item['label']);
             }
         }

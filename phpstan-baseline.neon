@@ -1,7 +1,25 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Argument of an invalid type TYPO3\\CMS\\Core\\Page\\ContentAreaCollection supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
+			message: '#^Cannot call method getRequestUri\(\) on TYPO3\\CMS\\Core\\Http\\NormalizedParams\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\VisualEditor\\Backend\\Controller\\PageEditController\:\:\$moduleData \(TYPO3\\CMS\\Backend\\Module\\ModuleData\) does not accept TYPO3\\CMS\\Backend\\Module\\ModuleData\|null\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Classes/Backend/Controller/PageEditController.php
+
+		-
+			message: '#^Cannot access offset ''colPos'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php
+
+		-
+			message: '#^Cannot access offset ''name'' on TYPO3\\CMS\\Core\\Page\\ContentArea\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
 			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php

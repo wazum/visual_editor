@@ -6,7 +6,6 @@ namespace TYPO3\CMS\VisualEditor\Service;
 
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Information\Typo3Version;
-use TYPO3\CMS\Core\Page\ContentAreaCollection;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Domain\Record;
@@ -16,10 +15,6 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\DataProcessing\PageContentFetchingProcessor;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\Enum\LanguageMode;
-
-use function assert;
-use function is_object;
-use function method_exists;
 
 final readonly class LanguageModeService
 {
@@ -37,7 +32,8 @@ final readonly class LanguageModeService
         $isFreeMode = false;
 
         if ($this->typo3Version->getMajorVersion() >= 14) {
-            $groupedRecords = $pageInformation->getPageLayout()->getContentAreas()->getGroupedRecords();
+            $pageLayout = $pageInformation->getPageLayout() ?? throw new InvalidArgumentException('PageLayout is not available in PageInformation', 1772464934);
+            $groupedRecords = $pageLayout->getContentAreas()->getGroupedRecords();
         } else {
             $groupedRecords = $this->getGroupedRecordsTYPO3v13($pageInformation->getPageRecord(), $request);
         }
@@ -53,7 +49,7 @@ final readonly class LanguageModeService
                     continue;
                 }
 
-                if ($record->getLanguageInfo()->getTranslationParent()) {
+                if ($record->getLanguageInfo()?->getTranslationParent()) {
                     $isConnectedMode = true;
                 } else {
                     $isFreeMode = true;
@@ -97,6 +93,8 @@ final readonly class LanguageModeService
 
     /**
      * @deprecated will be removed after TYPO3 v13 support is dropped
+     * @param array<string, mixed> $pageRow
+     * @return array<string, array{records: list<Record>}>
      */
     private function getGroupedRecordsTYPO3v13(array $pageRow, ServerRequestInterface $request): array
     {

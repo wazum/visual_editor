@@ -8,12 +8,11 @@ use B13\Container\Domain\Model\Container;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
+use TYPO3\CMS\Frontend\Page\PageInformation;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent as V13RenderContentAreaEvent;
 use TYPO3\CMS\VisualEditor\Service\EditModeService;
 use TYPO3\CMS\VisualEditor\Service\LocalizationService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
-
-use function str_contains;
 
 final readonly class RenderContentAreaEventListener
 {
@@ -35,7 +34,9 @@ final readonly class RenderContentAreaEventListener
         $tag = GeneralUtility::makeInstance(TagBuilder::class, 've-content-area', $event->getRenderedContentArea());
         $tag->forceClosingTag(true);
 
-        $pageUid = $event->getRequest()->getAttribute('frontend.page.information')->getId();
+        $pageInformation = $event->getRequest()->getAttribute('frontend.page.information');
+        assert($pageInformation instanceof PageInformation);
+        $pageUid = $pageInformation->getId();
         $tag->addAttribute('target', (string)$pageUid);
         $tag->addAttribute('colPos', (string)$event->getContentArea()->getColPos());
         $tag->addAttribute('allowedContentTypes', implode(',', $event->getContentArea()->getAllowedContentTypes()));

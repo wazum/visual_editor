@@ -6,6 +6,11 @@ namespace TYPO3\CMS\VisualEditor\Core\RichtText;
 
 final readonly class RichTextConfigurationServiceDto
 {
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $additionalConfiguration
+     * @param array<string, mixed> $externalPlugins
+     */
     public function __construct(
         public string $tableName,
         public int $uid,
@@ -22,16 +27,25 @@ final readonly class RichTextConfigurationServiceDto
     ) {
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getData(): array
     {
         return $this->data;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getAdditionalConfiguration(): array
     {
         return $this->additionalConfiguration;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getExternalPlugins(): array
     {
         return $this->externalPlugins;
