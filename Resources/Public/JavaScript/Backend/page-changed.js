@@ -82,4 +82,7 @@ async function loadModuleDocHeader(newUrl) {
       currentBar.replaceWith(newBar);
     }
   });
+
+  // force reinitialization the clear cache JS, as it only checks for the .t3js-clear-page-cache class once
+  import('@typo3/backend/clear-cache.js#' + Date.now());
 }

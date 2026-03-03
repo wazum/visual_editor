@@ -249,7 +249,7 @@ final class PageEditController
         }
 
         // Clear Cache
-        $button = $this->makeClearCacheButton($buttonBar);
+        $button = $this->makeClearCacheButton();
         $buttonBar->addButton($button, ButtonBar::BUTTON_POSITION_RIGHT, buttonGroup: 1);
 
         /*
@@ -392,14 +392,14 @@ final class PageEditController
             ->setIcon($this->iconFactory->getIcon('actions-page-open', IconSize::SMALL));
     }
 
-    private function makeClearCacheButton(ButtonBar $buttonBar): ButtonInterface
+    private function makeClearCacheButton(): ButtonInterface
     {
-        return $buttonBar
-            ->makeLinkButton()
-            ->setHref('#')
-            ->setDataAttributes(['id' => $this->pageRecord->getUid()]) // TODO check if this needs to take localized page uid into account
+        // TODO use $this->componentFactory->createGenericButton() if TYPO3 v14 is the minimum requirement
+        return GeneralUtility::makeInstance(GenericButton::class)
+            ->setTag('button')
+            ->setLabel($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.clear_cache'))
             ->setClasses('t3js-clear-page-cache')
-            ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.clear_cache'))
+            ->setAttributes(['data-id' => (string)$this->pageRecord->getUid()])
             ->setIcon($this->iconFactory->getIcon('actions-system-cache-clear', IconSize::SMALL));
     }
 
