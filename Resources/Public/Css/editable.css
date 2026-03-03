@@ -2,7 +2,7 @@
  * Custom styles for CKEditor to make it blend with the surrounding content.
  * TODO move this into the <ve-editable-rich-text> !!!
  */
-.ck-content {
+.ck-content.ck-content.ck-content {
   background: none !important;
   border: none !important;
   box-shadow: none !important;
