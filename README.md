@@ -10,7 +10,7 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - ⚡ Real-time preview of changes without page reloads
 - 😊 User-friendly interface for non-technical editors
 
-TODO put gifs here
+<https://github.com/user-attachments/assets/a4d2a536-40dd-4df8-a980-0b0362654d24>
 
 ## Installation
 
