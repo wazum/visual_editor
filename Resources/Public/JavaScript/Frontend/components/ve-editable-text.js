@@ -24,7 +24,7 @@ export class VeEditableText extends LitElement {
   constructor() {
     super();
 
-    this.value = this.innerText;
+    this.value = this.getAttribute('value');
     this.valueInitial = this.value;
     this.innerText = '';
     this.addEventListener('click', (e) => {

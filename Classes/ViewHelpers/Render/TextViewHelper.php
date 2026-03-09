@@ -185,6 +185,7 @@ final class TextViewHelper extends AbstractViewHelper
         );
         $tag->addAttribute('title', $title);
         $tag->addAttribute('allowNewlines', $allowNewlines);
+        $tag->addAttribute('value', str_replace('<br>', "\n", $value));
 
         $tag->setContent($html);
 
