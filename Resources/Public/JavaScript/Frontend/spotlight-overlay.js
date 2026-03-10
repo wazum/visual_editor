@@ -229,11 +229,61 @@ function unionRects(rects) {
   return mergedRects;
 }
 
+/**
+ * Walk upwards across light DOM, slots, and shadow boundaries.
+ *
+ * @param {Node|null} node
+ * @returns {Element|null}
+ */
+function getComposedParent(node) {
+  if (!node) return null;
+  if (node.assignedSlot) return node.assignedSlot;
+  if (node.parentNode instanceof ShadowRoot) return node.parentNode.host;
+  if (node.parentElement) return node.parentElement;
+  return node.parentNode instanceof Element ? node.parentNode : null;
+}
+
+/**
+ * Returns whether the target is visually reachable for spotlighting.
+ * Elements inside closed <details> stay visible only when they are inside
+ * that details element's direct <summary> subtree.
+ *
+ * @param {Element} element
+ * @returns {boolean}
+ */
+function isTargetVisible(element) {
+  if (!(element instanceof Element) || !element.isConnected) return false;
+
+  let current = element;
+  let visibleSummaryOwner = null;
+
+  while (current) {
+    if (current instanceof HTMLElement && current.tagName === "SUMMARY") {
+      visibleSummaryOwner = current.parentElement instanceof HTMLDetailsElement
+        ? current.parentElement
+        : null;
+    }
+
+    if (current instanceof HTMLDetailsElement) {
+      if (!current.open && visibleSummaryOwner !== current) {
+        return false;
+      }
+      if (visibleSummaryOwner === current) {
+        visibleSummaryOwner = null;
+      }
+    }
+
+    current = getComposedParent(current);
+  }
+
+  return true;
+}
+
 function computeHolesFromTargets() {
   const holes = [];
 
   for (const el of currentTargets) {
-    if (!(el instanceof Element)) continue;
+    if (!(el instanceof Element) || !isTargetVisible(el)) continue;
 
     const rect = el.getBoundingClientRect();
     if (!rect || (rect.width <= EPS && rect.height <= EPS)) continue;
@@ -296,6 +346,7 @@ function addListeners() {
     }
   });
 
+  document.addEventListener("toggle", onWindowChanged, { capture: true });
   window.addEventListener("resize", onWindowChanged);
   window.addEventListener("scroll", onWindowChanged, { passive: true });
 }
@@ -307,6 +358,7 @@ function removeListeners() {
   resizeObserver.disconnect();
   mutationObserver.disconnect();
 
+  document.removeEventListener("toggle", onWindowChanged, { capture: true });
   window.removeEventListener("resize", onWindowChanged);
   window.removeEventListener("scroll", onWindowChanged);
 }
