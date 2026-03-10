@@ -20,14 +20,14 @@ export class VeDragHandle extends LitElement {
 
   firstUpdated(changedProperties) {
     autoNoOverlap(this, 've-drag-handle');
+    this.style.paddingBottom = 'calc(var(--auto-no-overlap-padding, 0px) + 4px)';
+
     if (this.isActive === 'true') {
       /** @type {HTMLElement} */
       const element = this;
       element.setAttribute('draggable', 'true');
       element.addEventListener('dragstart', this._dragStart.bind(this));
       element.addEventListener('dragend', this._dragEnd.bind(this));
-
-      element.style.paddingBottom = 'calc(var(--auto-no-overlap-padding, 0px) + 4px)';
     }
   }
 

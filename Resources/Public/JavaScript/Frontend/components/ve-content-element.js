@@ -89,12 +89,14 @@ export class VeContentElement extends LitElement {
     });
 
     if (this.parentElement.tagName.toLowerCase() !== 've-content-area') {
-      const message = 'Use f:render.contentArea or f:mark.contentArea at this location!';
-      const veError = document.createElement('ve-error');
-      veError.setAttribute('text', message);
-      this.appendChild(veError);
-      throw new Error(message);
+      let message = 'parent of ve-content-element must be ve-content-area, found ' + this.parentElement.tagName.toLowerCase();
+      message += "\n" + 'drag and drop is disabled for this element.';
+      console.warn(message);
     }
+  }
+
+  get hasContentAreaAsParent() {
+    return this.parentElement.tagName.toLowerCase() === 've-content-area';
   }
 
   /**
@@ -102,7 +104,9 @@ export class VeContentElement extends LitElement {
    */
   firstUpdated(changedProperties) {
     // overwrite pid attribute of parent ve-content-area to ensure it is correct even if slide=-1 is used
-    this.parentElement.setAttribute('target', this.pid);
+    if (this.hasContentAreaAsParent) {
+      this.parentElement.setAttribute('target', this.pid);
+    }
 
     if (this.hiddenFieldName) {
       dataHandlerStore.setInitialData(this.table, this.uid, this.hiddenFieldName, !!this.isHidden);
@@ -147,10 +151,10 @@ export class VeContentElement extends LitElement {
       <ve-drag-handle
         table="${this.table}" uid="${this.uid}" CType="${this.CType}"
         class="button-bar ${this.isHidden ? 'hidden' : ''} ${this.dragInProgress ? 'dragAndDropActive' : ''}"
-        isActive="${this.canBeMoved ? 'true' : 'false'}"
+        isActive="${(this.canBeMoved && this.hasContentAreaAsParent) ? 'true' : 'false'}"
       >
         <span class="button-bar-headline" title="uid:${this.uid}">
-                ${this.canBeMoved ? '⠿ ' : ''}${this.elementName}
+                ${(this.canBeMoved && this.hasContentAreaAsParent) ? '⠿ ' : ''}${this.elementName}
               </span>
         <!-- TODO extract button bar as separate component -->
         ${
@@ -193,16 +197,19 @@ export class VeContentElement extends LitElement {
     return html`
       ${this.canModifyRecord ? statusBar : ''}
       <slot></slot><!-- slot must be top level to mitigate all CSS problems -->
-      <ve-drop-zone
-        table="${this.table}"
-        uid="${this.uid}"
-        target="${-this.uid}"
-        colPos="${this.colPos}"
-        allowedContentTypes="${this.parentElement.allowedContentTypes}"
-        disallowedContentTypes="${this.parentElement.disallowedContentTypes}"
-        columnName="${this.parentElement.columnName}"
-        tx_container_parent="${this.tx_container_parent}"
-      ></ve-drop-zone>
+      ${
+        this.hasContentAreaAsParent ? html`
+          <ve-drop-zone
+            table="${this.table}"
+            uid="${this.uid}"
+            target="${-this.uid}"
+            colPos="${this.colPos}"
+            allowedContentTypes="${this.parentElement.allowedContentTypes}"
+            disallowedContentTypes="${this.parentElement.disallowedContentTypes}"
+            columnName="${this.parentElement.columnName}"
+            tx_container_parent="${this.tx_container_parent}"
+          ></ve-drop-zone>` : ''
+      }
       <div class="border ${this.isHidden ? 'hidden' : ''} ${this.showElementOverlay ? 'showElementOverlay' : ''}"></div>
     `;
   }

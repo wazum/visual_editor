@@ -74,7 +74,7 @@ export class VeContentArea extends LitElement {
       .replace('__UID_PID__', this.target)
       .replace('__TX_CONTAINER_PARENT__', this.tx_container_parent || 0);
 
-    const columnHasChild = [...this.children].filter((element) => element.tagName.toLowerCase() === 've-content-element').length > 0;
+    const columnHasChild = [...this.children].length > 0;
     const label = lll('frontend.addContentElement') + ' ' + this.columnName;
     const addButton = html`
       <div class="center">
