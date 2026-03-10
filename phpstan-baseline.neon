@@ -23,3 +23,9 @@ parameters:
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
 			path: Classes/ViewHelpers/Mark/ContentAreaViewHelper.php
+
+		-
+			message: '#^Property TYPO3\\CMS\\VisualEditor\\ViewHelpers\\Render\\TextViewHelper\:\:\$typo3Version on left side of \?\? is not nullable nor uninitialized\.$#'
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: Classes/ViewHelpers/Render/TextViewHelper.php

@@ -36,7 +36,6 @@ use function json_encode;
 use function nl2br;
 use function str_replace;
 
-use const JSON_PRETTY_PRINT;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -79,7 +78,9 @@ final class TextViewHelper extends AbstractViewHelper
         parent::initializeArguments();
 
         $type = 'object';
-        if ($this->typo3Version->getMajorVersion() >= 14) {
+        // can not always use DI here because fluid initializes the class without DI. and calls initializeArguments.
+        $typo3Version = $this->typo3Version ?? GeneralUtility::makeInstance(Typo3Version::class);
+        if ($typo3Version->getMajorVersion() >= 14) {
             $type = self::RECORD_TYPE;
         }
 
@@ -266,6 +267,6 @@ final class TextViewHelper extends AbstractViewHelper
         $config['debug'] = false; // for now we disable debug mode
 
         $this->assetCollector->addJavaScriptModule('@typo3/ckeditor5/translations/' . $config['language']['ui'] . '.js');
-        return [json_encode($config, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), $richtextConfiguration['proc.'] ?? []];
+        return [json_encode($config, JSON_THROW_ON_ERROR), $richtextConfiguration['proc.'] ?? []];
     }
 }
