@@ -51,4 +51,4 @@ onMessage('openInMiddleFrame', (href) => {
   window.location = parsedHref.href;
 });
 
-onMessage('pageChanged', (data) => pageChanged(data.pageId, data.languageId));
+onMessage('pageChanged', (data) => pageChanged(data.pageId, data.languageId, data.routeArguments));

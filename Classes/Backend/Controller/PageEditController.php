@@ -174,7 +174,7 @@ final class PageEditController
             $view->getDocHeaderComponent()->setPageBreadcrumb($this->pageRecord->getRawRecord()->toArray());
         }
 
-        $iframeUrl = $this->iframeUrl();
+        $iframeUrl = $this->iframeUrl($request);
         $view->assignMultiple([
             'pageId' => $this->pageRecord->getUid(),
             'iframeSrc' => $iframeUrl,
@@ -200,11 +200,12 @@ final class PageEditController
         return $view->renderResponse('PageEdit');
     }
 
-    private function iframeUrl(): UriInterface
+    private function iframeUrl(ServerRequestInterface $request): UriInterface
     {
         return $this->site->getRouter()->generateUri(
             $this->pageRecord->getUid(),
             [
+                ...$request->getQueryParams()['params'] ?? [],
                 '_language' => $this->selectedLanguages[0]->getLanguageId(),
                 'editMode' => 1,
             ],
@@ -241,7 +242,7 @@ final class PageEditController
         }
 
         // View
-        if ($button = $this->makeViewButton($buttonBar)) {
+        if ($button = $this->makeViewButton($buttonBar, $request)) {
             $buttonBar->addButton($button, buttonGroup: 4);
         }
 
@@ -295,7 +296,7 @@ final class PageEditController
     /**
      * View Button
      */
-    private function makeViewButton(ButtonBar $buttonBar): ?ButtonInterface
+    private function makeViewButton(ButtonBar $buttonBar, ServerRequestInterface $request): ?ButtonInterface
     {
         if (
             $this->pageRecord->getVersionInfo()?->getState() === VersionState::DELETE_PLACEHOLDER
@@ -311,6 +312,7 @@ final class PageEditController
         $previewDataAttributes = $previewUriBuilder
             ->withRootLine(BackendUtility::BEgetRootLine($this->pageRecord->getUid()))
             ->withLanguage($this->selectedLanguages[0]->getLanguageId())
+            ->withAdditionalQueryParameters($request->getQueryParams()['params'] ?? [])
             ->buildDispatcherDataAttributes();
 
         return $buttonBar

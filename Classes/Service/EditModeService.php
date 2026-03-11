@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Schema\Capability\TcaSchemaCapability;
 use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -83,22 +84,29 @@ final readonly class EditModeService
                 throw new RuntimeException('Could not determine current site language', 3305745963);
             }
 
+            $routing = $request->getAttribute('routing');
+            if (!$routing instanceof PageArguments) {
+                throw new RuntimeException('Could not determine current routing context', 1773230232);
+            }
+
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
+
+            $returnUrl = (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
+                'id' => $pageId,
+                'params' => $routing->getRouteArguments(),
+            ]);
+
             $newContentUrl = (string)$this->uriBuilder->buildUriFromRoute('new_content_element_wizard', [
                 'id' => $pageId,
                 'colPos' => '__COL_POS__',
                 'uid_pid' => '__UID_PID__',
                 ...($isExtContainerInstalled ? ['tx_container_parent' => '__TX_CONTAINER_PARENT__'] : []),
-                'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
-                    'id' => $pageId,
-                ]),
+                'returnUrl' => $returnUrl,
             ]);
 
             $editParams = [
                 'edit' => ['__TABLE__' => ['__UID__' => 'edit']],
-                'returnUrl' => (string)$this->uriBuilder->buildUriFromRoute('web_edit', [
-                    'id' => '__PAGE_ID__',
-                ]),
+                'returnUrl' => $returnUrl,
                 'module' => 'web_edit',
             ];
             $editContentUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit', $editParams);
@@ -106,7 +114,7 @@ final readonly class EditModeService
                 $editContentContextualUrl = (string)$this->uriBuilder->buildUriFromRoute('record_edit_contextual', $editParams);
             }
 
-            $data = [
+            $veInfo = [
                 'pageId' => $pageId,
                 'languageId' => $siteLanguage->getLanguageId(),
                 'newContentUrl' => $newContentUrl,
@@ -114,11 +122,12 @@ final readonly class EditModeService
                 'editContentContextualUrl' => $editContentContextualUrl ?? null,
                 'allowNewContent' => $this->languageModeService->getAllowNewContent($pageInformation, $siteLanguage, $request),
                 'token' => $this->formProtectionFactory->createForType('backend')->generateToken('visual_editor', 'save'),
+                'routeArguments' => (object)$this->flattenBracketKeys(['params' => $routing->getRouteArguments()]),
             ];
             $this->assetCollector->addInlineJavaScript(
                 'veLangInfo',
                 'window.TYPO3 = window.TYPO3 || {};
-window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
+window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
                 [
                     'type' => 'text/javascript',
                 ],
@@ -127,6 +136,27 @@ window.veInfo = ' . json_encode($data, JSON_THROW_ON_ERROR) . ';',
                 ]
             );
         }
+    }
+
+    /**
+     * @param array<array-key, string|float|int|bool|null|array<mixed>> $input
+     * @return array<string, string>
+     */
+    private function flattenBracketKeys(array $input, string $prefix = ''): array
+    {
+        $result = [];
+
+        foreach ($input as $key => $value) {
+            $newKey = $prefix === '' ? (string)$key : $prefix . '[' . $key . ']';
+
+            if (is_array($value)) {
+                $result += $this->flattenBracketKeys($value, $newKey);
+            } else {
+                $result[$newKey] = (string)$value;
+            }
+        }
+
+        return $result;
     }
 
     public function canEditField(RecordInterface $record, string $field, ServerRequestInterface $request): bool

@@ -1,8 +1,9 @@
 /**
  * @param pageId {number}
  * @param languageId {number}
+ * @param routeArguments {Record<string, string>}
  */
-export function pageChanged(pageId, languageId) {
+export function pageChanged(pageId, languageId, routeArguments) {
   pageId = parseInt(pageId, 10);
   languageId = parseInt(languageId, 10);
 
@@ -15,14 +16,7 @@ export function pageChanged(pageId, languageId) {
     languageId = 0;
   }
 
-  const newUrl = new URL(window.location.href);
-  newUrl.searchParams.set('id', pageId);
-  if (languageId) {
-    newUrl.searchParams.set('languages[0]', languageId);
-  } else {
-    newUrl.searchParams.delete('languages[0]');
-  }
-  window.history.pushState(null, '', newUrl);
+  const newUrl = updateUrlOfWindow(window, pageId, languageId, routeArguments);
 
   newUrl.searchParams.set('languages[0]', languageId);
   loadModuleDocHeader(newUrl);
@@ -30,17 +24,40 @@ export function pageChanged(pageId, languageId) {
   // set href of refresh button to new URL
   document.querySelector('[data-identifier="actions-refresh"]').parentNode.href = newUrl.toString();
 
-  const newUrlTop = new URL(window.top.location.href);
-  newUrlTop.searchParams.set('id', pageId);
-  if (languageId) {
-    newUrlTop.searchParams.set('languages[0]', languageId);
-  } else {
-    newUrlTop.searchParams.delete('languages[0]');
-  }
-  window.top.history.pushState(null, '', newUrlTop);
+  updateUrlOfWindow(window.top, pageId, languageId, routeArguments);
 
   ModuleStateStorage.update('web', pageId);
 }
+
+/**
+ * @param windowObject {Window}
+ * @param pageId {number}
+ * @param languageId {number}
+ * @param routeArguments {Record<string, string>}
+ * @return {module:url.URL}
+ */
+function updateUrlOfWindow(windowObject, pageId, languageId, routeArguments) {
+  const newUrl = new URL(windowObject.location.href);
+  for (const param of newUrl.searchParams.keys()) {
+    if (param.startsWith('id') || param.startsWith('languages[') || param.startsWith('params[')) {
+      newUrl.searchParams.delete(param);
+    }
+  }
+  newUrl.searchParams.set('id', pageId);
+  if (languageId) {
+    newUrl.searchParams.set('languages[0]', languageId);
+  }
+
+  for (const [key, value] of Object.entries(routeArguments)) {
+    if (key.startsWith('params[')) {
+      newUrl.searchParams.append(key, value);
+    }
+  }
+
+  windowObject.history.pushState(null, '', newUrl);
+  return newUrl;
+}
+
 
 let abortController = new AbortController();
 

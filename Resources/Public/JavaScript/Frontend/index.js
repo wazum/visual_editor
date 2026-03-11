@@ -37,7 +37,7 @@ document.body.appendChild(element);
 })();
 
 if (window.veInfo) {
-  sendMessage('pageChanged', {pageId: window.veInfo.pageId, languageId: window.veInfo.languageId});
+  sendMessage('pageChanged', window.veInfo);
 }
 
 initSaveScrollPosition();

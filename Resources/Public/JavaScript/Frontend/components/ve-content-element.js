@@ -30,15 +30,13 @@ export class VeContentElement extends LitElement {
   get editContentUrl() {
     return window.veInfo.editContentUrl
       .replace('__TABLE__', this.table)
-      .replace('__UID__', this.uid)
-      .replace('__PAGE_ID__', this.pid);
+      .replace('__UID__', this.uid);
   }
 
   get editContentContextualUrl() {
     return window.veInfo.editContentContextualUrl
       ?.replace('__TABLE__', this.table)
-      ?.replace('__UID__', this.uid)
-      .replace('__PAGE_ID__', this.pid);
+      ?.replace('__UID__', this.uid);
   }
 
   /**
