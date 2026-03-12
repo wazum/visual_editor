@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+defined('TYPO3') || die('TYPO3 not defined.');
+
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Fluid\Event\ModifyRenderedContentAreaEvent;
 use TYPO3\CMS\VisualEditor\BackwardsCompatibility\Event\RenderContentAreaEvent as V13_RenderContentAreaEvent;

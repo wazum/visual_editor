@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+defined('TYPO3') || die('TYPO3 not defined.');
+
 $importMap = [];
 $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . '/../Resources/Public/JavaScript/'));
 $allFiles = array_filter(iterator_to_array($iterator), fn($file) => $file->isFile());
