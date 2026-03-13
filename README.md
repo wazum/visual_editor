@@ -25,6 +25,7 @@ This extension provides visual editing features for content elements in TYPO3 CM
 - [fluid_styled_content addon](https://github.com/andersundsehr/visual_editor_fluid_styled_content_addon) automatic text editing for fluid_styled_content
 - [Example Commit](https://github.com/TYPO3/typo3/commit/b0ee1530107b30ece5475ea890b62b3d8919c609) How to integrate `f:render.text`
 - [Example Commit](https://github.com/TYPO3/typo3/commit/a99a339634b7caed123576b6ca2bb49dfb5d8cbf) How to integrate `f:render.contentArea`
+- [Slack Channel](https://typo3.slack.com/archives/C0ALHJR23U4) ask questions
 
 ## Where to add the ViewHelpers
 
