@@ -77,11 +77,18 @@ readonly class PersistenceMiddleware implements MiddlewareInterface
             throw new RuntimeException('Unknown data operations: ' . implode(', ', array_keys($input)) . ' only data and cmdArray are allowed', 8110225095);
         }
 
-        $this->dataHandlerService->run($data, []);
-
+        $mergedCmd = [];
         foreach ($cmdArray as $cmd) {
-            $this->dataHandlerService->run([], $cmd);
+            foreach ($cmd as $table => $records) {
+                foreach ($records as $uid => $actions) {
+                    foreach ($actions as $action => $actionData) {
+                        $mergedCmd[$table][$uid][$action] = $actionData;
+                    }
+                }
+            }
         }
+
+        $this->dataHandlerService->run($data, $mergedCmd);
 
         return new JsonResponse(['success' => true]);
     }
