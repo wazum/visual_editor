@@ -18,6 +18,28 @@ export const isDirectMode = window.parent === window;
  */
 
 /**
+ * Returns the origin of the communication peer.
+ * Parent side: derived from the iframe's src (supports cross-domain sites).
+ * Child side: derived from document.referrer (the backend that loaded us).
+ * @returns {string}
+ */
+function getPeerOrigin() {
+  const editorIframe = document.querySelector('iframe#visual-editor-iframe');
+  if (editorIframe) {
+    return new URL(editorIframe.src, window.location.href).origin;
+  }
+
+  if (document.referrer) {
+    const origin = new URL(document.referrer).origin;
+    if (window.veInfo.allowedReferrer.includes(origin)) {
+      return origin;
+    }
+  }
+
+  return window.location.origin;
+}
+
+/**
  * @template {keyof VECommandDetailMap} K
  * @param command {K}
  * @param detail {VECommandDetailMap[K]}
@@ -28,19 +50,18 @@ export function sendMessage(command, detail = null, sendTo = 'any') {
     detail,
     command: `ve_${command}`,
   };
+  const peerOrigin = getPeerOrigin();
   const editorIframe = document.querySelector('iframe#visual-editor-iframe');
   if (editorIframe) {
     if (sendTo === 'parent') {
       return;
     }
-    // we are the parent, send message to the iframe
-    editorIframe.contentWindow.postMessage(message, '*');
+    editorIframe.contentWindow.postMessage(message, peerOrigin);
   } else {
     if (sendTo === 'iframe') {
       return;
     }
-    // we are the iframe, send message to the parent
-    parent.postMessage(message, '*');
+    parent.postMessage(message, peerOrigin);
   }
 }
 
@@ -62,7 +83,14 @@ export function onMessage(command, callback) {
     isMessageListenerInitialized = true;
 
     window.addEventListener('message', (event) => {
-      // TODO Security: validate origin
+      if (event.origin !== getPeerOrigin()) {
+        return;
+      }
+      const editorIframe = document.querySelector('iframe#visual-editor-iframe');
+      const expectedSource = editorIframe ? editorIframe.contentWindow : window.parent;
+      if (event.source !== expectedSource) {
+        return;
+      }
       if (messageListeners[event.data.command]) {
         for (const callback of messageListeners[event.data.command]) {
           callback(event.data.detail);
