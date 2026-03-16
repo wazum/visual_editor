@@ -26,19 +26,16 @@ export const isDirectMode = window.parent === window;
 function getPeerOrigin() {
   const editorIframe = document.querySelector('iframe#visual-editor-iframe');
   if (editorIframe) {
-    try {
-      return new URL(editorIframe.src, window.location.href).origin;
-    } catch {
-      return window.location.origin;
-    }
+    return new URL(editorIframe.src, window.location.href).origin;
   }
+
   if (document.referrer) {
-    try {
-      return new URL(document.referrer).origin;
-    } catch {
-      return window.location.origin;
+    const origin = new URL(document.referrer).origin;
+    if (window.veInfo.allowedReferrer.includes(origin)) {
+      return origin;
     }
   }
+
   return window.location.origin;
 }
 
