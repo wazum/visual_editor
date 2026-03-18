@@ -15,3 +15,6 @@ ExtensionManagementUtility::addTypoScriptSetup("@import 'EXT:visual_editor/Confi
 if (!class_exists(ModifyRenderedContentAreaEvent::class)) {
     class_alias(V13_RenderContentAreaEvent::class, ModifyRenderedContentAreaEvent::class);
 }
+
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'backendOrigin';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'backendOriginHmac';

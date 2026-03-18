@@ -39,6 +39,7 @@ final readonly class EditModeService
         private FormProtectionFactory $formProtectionFactory,
         private Typo3Version $typo3Version,
         private SiteFinder $siteFinder,
+        private BackendOriginProvider $backendOriginProvider,
     ) {
     }
 
@@ -93,7 +94,7 @@ final readonly class EditModeService
 
             $isExtContainerInstalled = ExtensionManagementUtility::isLoaded('container');
 
-            $backendOrigin = $GLOBALS['BE_USER']->getSessionData('visual_editor_backend_origin') ?? '';
+            $backendOrigin = $this->backendOriginProvider->resolve($request);
 
             $returnUrl = $backendOrigin . $this->uriBuilder->buildUriFromRoute('web_edit', [
                 'id' => $pageId,
@@ -244,7 +245,7 @@ window.veInfo = ' . json_encode($veInfo, JSON_THROW_ON_ERROR) . ';',
             }
         }
 
-        $backendOrigin = $GLOBALS['BE_USER']->getSessionData('visual_editor_backend_origin') ?? '';
+        $backendOrigin = $this->backendOriginProvider->get();
         if ($backendOrigin !== '') {
             $allowedReferrers[$backendOrigin] = true;
         }

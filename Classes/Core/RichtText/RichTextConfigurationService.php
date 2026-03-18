@@ -13,6 +13,7 @@ use TYPO3\CMS\Core\Localization\Locales;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterGetExternalPluginsEvent;
+use TYPO3\CMS\VisualEditor\Service\BackendOriginProvider;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\AfterPrepareConfigurationForEditorEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\BeforeGetExternalPluginsEvent;
 use TYPO3\CMS\RteCKEditor\Form\Element\Event\BeforePrepareConfigurationForEditorEvent;
@@ -31,6 +32,7 @@ readonly class RichTextConfigurationService
         private EventDispatcher $eventDispatcher,
         private UriBuilder $uriBuilder,
         private Locales $locales,
+        private BackendOriginProvider $backendOriginProvider,
     ) {
     }
 
@@ -133,7 +135,7 @@ readonly class RichTextConfigurationService
             ],
         ];
 
-        $backendOrigin = $GLOBALS['BE_USER']->getSessionData('visual_editor_backend_origin') ?? '';
+        $backendOrigin = $this->backendOriginProvider->get();
 
         $pluginConfiguration = [];
         foreach ($externalPlugins as $pluginName => $configuration) {

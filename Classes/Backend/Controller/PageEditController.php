@@ -164,11 +164,6 @@ final class PageEditController
             return $view->renderResponse('PageLayout/PageModuleNoAccess');
         }
 
-        /** @var NormalizedParams $normalizedParams */
-        $normalizedParams = $request->getAttribute('normalizedParams');
-        $backendOrigin = rtrim($normalizedParams->getRequestHost(), '/');
-        $this->getBackendUser()->setAndSaveSessionData('visual_editor_backend_origin', $backendOrigin);
-
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
             JavaScriptModuleInstruction::create('@typo3/visual-editor/Backend/index'),
         );
@@ -208,12 +203,18 @@ final class PageEditController
 
     private function iframeUrl(ServerRequestInterface $request): UriInterface
     {
+        /** @var NormalizedParams $normalizedParams */
+        $normalizedParams = $request->getAttribute('normalizedParams');
+        $backendOrigin = rtrim($normalizedParams->getRequestHost(), '/');
+
         return $this->site->getRouter()->generateUri(
             $this->pageRecord->getUid(),
             [
                 ...$request->getQueryParams()['params'] ?? [],
                 '_language' => $this->selectedLanguages[0]->getLanguageId(),
                 'editMode' => 1,
+                'backendOrigin' => $backendOrigin,
+                'backendOriginHmac' => hash_hmac('sha256', $backendOrigin, (string) $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']),
             ],
         );
     }
